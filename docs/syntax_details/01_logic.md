@@ -1,0 +1,206 @@
+# GRAM Parser Logic & Behavior
+
+This document outlines the business logic, parsing rules, and data transformation algorithms required to convert a `.gram` file into the target JSON structure.
+
+## 1. Global Architecture
+
+The parsing process follows a modern 3-stage pipeline:
+
+1.  **Parsing (OhmJS):** A PEG (Parsing Expression Grammar) based parser validates the input against the `.gram` grammar and generates a match object.
+2.  **AST Generation (Semantics):** The match object is traversed to build a clean **Abstract Syntax Tree (AST)**. This step ensures the structure is strictly typed but naive (no logic aggregation).
+3.  **Compilation (Compiler):** The AST is passed to the Compiler which:
+    *   Builds the unique registry of ingredients/cookware.
+    *   Processes Sections/Steps (Local Scope).
+    *   Generated the Global Shopping List (Global Scope aggregation).
+    *   Minifies the output for JSON consumption.
+
+---
+
+## 2. Parsing Rules
+
+### 2.1. Sectioning Strategy
+The parser must normalize the structure regardless of the input format:
+* **Explicit Sections:** If lines starting with `##` are found, split the content based on these headers.
+    * **Retro-Planning:** Headers can optionally include timing information (`{T-2d}`).
+        * **Allowed Units:** The timing MUST end with one of: `d` (days), `h` (hours), `min` or `m` (minutes).
+    * **Intermediate Output:** Headers can define an intermediate preparation (`->&name{}`) which captures the section's result.
+    * **Strict Order:** The components MUST appear in this exact order: `## Title` -> `[Retro-Planning]` -> `[Intermediate Output]`.
+        * `## Titre {T-2d} ->&pâte{}` (Valid)
+        * `## Titre ->&pâte{} {T-2d}` (Invalid)
+* **Implicit Section:** If no `##` headers are found, treat the entire body (after metadata) as a single "Default Section" (Title: `null`).
+
+### 2.2. The "Block" Concept (Step)
+A step is defined by a paragraph (separated by double newlines).
+* **Scope:** Any definition of an intermediate preparation (`->&name`) applies to **all** ingredients found within that paragraph block.
+* **Section Scope:** An intermediate preparation defined on a section title (`## Title ->&name{}`) applies to the entire section logic (conceptual encapsulation).
+
+### 2.3. Token parsing order
+To avoid conflicts, inline parsing should prioritize:
+1.  **Comments** (`//`, `/* */`) -> Remove or extract first.
+2.  **Action** (`[Action]`) -> Must be identified at the very start of the block.
+3.  **Composites/Sources** (`<@parent`) -> To link the ingredient to its source immediately.
+3.  **Aliases** (`@Name[Alias]`) -> Identified by brackets `[]` immediately following the name.
+4.  **Alternatives** (`@A|@B` or `#A|#B`) -> Identified by the pipe `|` separating two distinct ingredient or cookware tokens.
+5.  **Standard Ingredients/Cookware** (`@`, `#`).
+6.  **Cookware Scaling Logic**:
+    *   No quantity (`#bowl{}`) -> **Implicit Fixed** (`fixed: true`).
+    *   Quantity defined (`#ramekin{4}`) -> **Implicit Scalable** (`fixed: false`).
+    *   Explicit Fixed (`#pan{=2}`) -> **Explicit Fixed** (`fixed: true`).
+
+### 2.5. Strict Cookware Validation
+*   **Braces `{}`:** Strictly reserved for integer quantities (count). Units or text descriptions inside braces are forbidden.
+    *   `#pan{}` (OK - 1 implicit)
+    *   `#pan{2}` (OK - 2 pans)
+    *   `#pan{20cm}` (INVALID - Parsing error or ignored)
+*   **Parentheses `()`:** Used for ALL descriptive attributes (dimensions, material).
+    *   `#pan{}(20cm)` (OK)
+
+
+### 2.4. Strict Unit Validation
+The parser **MUST** enforce strict units for Timers and Temperatures to ensure convertibility.
+
+*   **Timers (`~{...}`):**
+    *   **Mandatory:** Must have an explicit unit.
+    *   **Whitelist:** `min` (minutes), `h` (hours), `d` (days), `s` (seconds).
+    *   **Normalization:** `m` or `minutes` should be normalized to `min`.
+    *   **Invalid:** Text descriptions or missing units trigger a warning.
+
+*   **Temperatures (`!{...}`):**
+    *   **Mandatory:** Must have an explicit unit.
+    *   **Whitelist:** `°C` (Celsius), `°F` (Fahrenheit).
+    *   **Invalid:** Text descriptions or missing units trigger a warning.
+
+## 3. Data Logic: Section Scope (The "Stack")
+
+**Goal:** Generate `sections[].ingredients`.
+
+* **Rule:** **No Aggregation**. Use a "Stack" logic.
+* **Behavior:**
+    * If `@butter{100g}` appears in step 1 and `@butter{50g}` in step 3, the section ingredient list MUST contain two distinct entries.
+        * **Modifier `@&` (Reference):**
+            * **Safety Validated:** The compiler verifies that the referenced ingredient `id` has been seen before. If not -> Warning `UNDEFINED_REFERENCE`.
+            * **Instruction Logic:**
+                * If it has a quantity (`@&butter{50g}`): Treat as a NEW quantity of an existing item -> **Add to list**.
+                * If it has NO quantity (`@&butter{}`): Treat as a flow instruction (e.g. "Use the reserved butter") -> **Ignore in list**.
+    * **Relative Quantities (`@{20% @target}` or `@{20% &variable}`)**:
+        * **Ingredient Target (`@`)**:
+            * Search strictly within the **current section**.
+            * Sum the scalar values of all **previous** occurrences of the target ingredient (checking `id`).
+        * **Variable Target (`&`)**:
+            * Look up the **accumulated mass** of the targeted intermediate variable (calculated at creation `->&`).
+        * **Mass Calculation**:
+            * All absolute masses are normalized to `g` for calculation.
+            * Count/Units (`@egg{1}`) have `mass: 0` but flag the result as `is_partial`.
+        * **Formula Tracking**:
+            * The compiler attaches a `formula` object to the usage entry.
+            * This formula is NOT resolved to a fixed number for the shopping list "Certain Mass". It is kept dynamic for display in the "Variable Parts".
+        * **Validation**:
+            * Checks for existence of target (Ghost Reference).
+            * Checks for self-referential cycles (Circular Reference).
+    * **Intermediate Preps:** Ingredients defined via `->&dough{}` or referenced via `@&dough{}` are **never** added to the section's ingredient list (they are internal states, not inputs).
+    * **Display References:** References using `&name{qty}` (without `@`) are treated as instruction text elements (`type: 'reference'`). They appear in the step content (with their quantity for display) but do NOT impact the shopping list.
+
+**Output:** `sections[].ingredients` should contain the list of all distinctive ingredient calls found in that section.
+
+---
+
+## 4. Data Logic: Shopping List Scope (The "Aggregator")
+
+**Goal:** Generate `shopping_list`.
+
+This is the most complex part. The parser must traverse all ingredients from all sections and apply the following reduction rules.
+
+### 4.1. Hybrid Aggregation (Consolidated List)
+*   **Rule:** Merge multiple lines for the same ingredient into a single entry.
+*   **Structure:**
+    *   `[Certain Mass]`: Sum of all absolute, convertible quantities (g, kg, ml).
+    *   `[Variable Parts]`: List of all non-additive, mixed units, or relative quantities.
+*   **Output Format:** Structured Object.
+    *   `qty`: The numeric certain mass.
+    *   `unit`: The unit of the certain mass (e.g., 'g').
+    *   `variable_entries`: Array of strings for the remaining parts.
+    *   *Note:* The final display string reference (e.g. "Sucre : 70g + (50% de @farine)") is constructed by the **Renderer** (Client), not the Parser.
+
+### 4.2. Alternatives Handling (GROUP)
+*   **Trigger:** Detection of the `|` symbol between ingredients.
+*   **Action:** Create a `type: alternative` entry.
+*   **Constraint:** Alternatives are **never** merged with single ingredients.
+
+### 4.3. Composite & Source Handling (MAX / DRIVER-PASSENGER)
+*   **Trigger:** Detection of the `<@parent` syntax.
+*   **Logic:**
+    1.  Group all ingredients sharing the same `@parent` name.
+    2.  Apply **MAX Integration Rule** on the declared parent quantities.
+    3.  See Specs for full Driver/Passenger details.
+
+### 4.4. Reference Handling (`&`)
+*   **Rule 1 (Intermediate):** If the name matches a defined `->&prep`, **ignore** completely in shopping list (it's a text reference).
+*   **Rule 2 (Raw Ingredient):** If the name matches a raw ingredient (e.g., `@&butter` referring to `@butter`):
+    *   **Validation:** Check if ingredient exists in Registry.
+    *   **Quantity:**
+        *   If quantity is absolute (`{50g}`): **ADD** to the `Certain Mass`.
+        *   If quantity is missing (`{}`): **IGNORE** (flow instruction only).
+
+### 4.5. Validation & "Linter" Logic
+The aggregator acts as a validator for complex dependencies:
+
+1.  **Circular References (Infinite Loop):**
+    *   Detects if dependency graph contains cycles (e.g. A depends on B, B depends on A).
+    *   **Action:** Displays `⚠️ Ref. Circulaire` in the variable part.
+
+2.  **Ghost References (Null Pointer):**
+    *   Detects if a relative quantity targets a non-existent source.
+    *   **Action:** Displays `❓ (Source introuvable)`.
+
+3.  **Scope Conflicts (Global Variables):**
+    *   Detects if a global variable (defined in Section Title `->&var`) is redefined.
+    *   **Action:** Adds a critical warning `SCOPE_CONFLICT`.
+
+---
+
+## 5. Output Data Models (JSON Mapping)
+
+The parser generates a **Registry-based** output to minimize redundancy.
+
+### 5.1. The Registry (`registry`)
+A central dictionary storing static definitions of ingredients and cookware found in the recipe.
+*   **Keys:** Semantic IDs (kebab-case slugs, e.g., `"olive-oil"`).
+*   **Values:** Definition objects containing `name`, `default_unit`, `is_composite`, etc.
+
+### 5.2. Minified Usage Objects (`ingredients`, `steps[].content`)
+Items in lists are **references** to the registry, containing only dynamic data for that specific usage.
+
+| Field | Description |
+| :--- | :--- |
+| `id` | The slug referencing the registry entry. |
+| `qty` | The numeric value (flattened) or object (if complex). Replaces `quantity`. |
+| `unit` | Specific unit for this usage. |
+| `modifiers` | Array of modifier flags (`?`, `-`, etc.) if present. |
+| `preparation`| String for preparation notes (e.g. "chopped"). |
+
+*Standard `type: "ingredient"` or `type: "single"` properties are removed for brevity.*
+
+### 5.3. Groups (Alternatives)
+Alternatives retain a typed structure:
+```json
+{
+  "type": "alternative",
+  "options": [ { "id": "milk", "qty": 100 }, { "id": "water", "qty": 100 } ]
+}
+```
+
+### 5.4. Flag Logic
+* **`optional: true`** -> Derived from `@?name`.
+* **`hidden: true`** -> Derived from `@-name`.
+* **`fixed: true`** -> For cookware, if explicitly fixed (`=`) or implied (no qty).
+* **`alias: "String"`** -> Derived from `[Alias]` syntax.
+
+---
+
+## 6. Edge Cases & Validation
+
+1.  **Unit Conversion:** The parser *should not* attempt to convert units (e.g., tbsp to ml) during parsing. It should store the raw unit. Unit conversion is a display/client-side concern.
+2.  **Missing Quantities:**
+    * `@salt{}` -> `quantity: 0` (or `null`), `unit: null`.
+    * UI should handle `0` as "Quantity Sufficient" (QS) or "to taste".
+3.  **Circular References:** The parser should ideally warn if `->&dough{}` is used inside the definition block of `&dough` (though unlikely in a linear recipe).

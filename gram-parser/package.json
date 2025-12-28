@@ -1,0 +1,26 @@
+{
+  "name": "gram-parser",
+  "version": "1.0.0",
+  "description": "Core parser for the GRAM recipe language, converting .gram files to JSON AST.",
+  "main": "src/index.js",
+  "keywords": [
+    "gram",
+    "recipe",
+    "parser",
+    "ast"
+  ],
+  "author": "abiwab",
+  "license": "GPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/abiwab/gram.git",
+    "directory": "gram-parser"
+  },
+  "bugs": {
+    "url": "https://github.com/abiwab/gram/issues"
+  },
+  "homepage": "https://github.com/abiwab/gram/tree/main/gram-parser#readme",
+  "dependencies": {
+    "ohm-js": "^17.2.1"
+  }
+}

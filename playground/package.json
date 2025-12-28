@@ -1,0 +1,25 @@
+{
+  "name": "gram-playground",
+  "version": "1.0.0",
+  "description": "Browser-based playground and IDE for the GRAM recipe language",
+  "author": "abiwab",
+  "license": "GPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/abiwab/gram.git",
+    "directory": "playground"
+  },
+  "bugs": {
+    "url": "https://github.com/abiwab/gram/issues"
+  },
+  "homepage": "https://github.com/abiwab/gram/tree/main/playground#readme",
+  "scripts": {
+    "build": "node build.js"
+  },
+  "dependencies": {
+    "ohm-js": "^17.2.1"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0"
+  }
+}

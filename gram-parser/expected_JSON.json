@@ -1,0 +1,1888 @@
+{
+  "title": "The Ultimate GRAM Torture Test",
+  "slug": "the-ultimate-gram-torture-test",
+  "meta": {
+    "title": "The Ultimate GRAM Torture Test",
+    "originalTitle": "Unit Test from Hell",
+    "date": "2025-12-17",
+    "lastUpdated": "2025-12-18",
+    "description": "A comprehensive recipe designed to break parsers and test every single feature of the GRAM specification, including edge cases, logic combinations, and syntax stressors.",
+    "category": "System Test",
+    "size": "∞ servings",
+    "author": [
+      "DeepMind Agent",
+      "The Parsers Nightmare"
+    ],
+    "source": [
+      "https://gram-lang.org/specs",
+      "https://localhost:3000/torture"
+    ],
+    "tags": [
+      "test",
+      "benchmark",
+      "syntax-heavy",
+      "edge-cases"
+    ]
+  },
+  "registry": {
+    "ingredients": {
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      },
+      "water": {
+        "id": "water",
+        "name": "water",
+        "default_unit": "ml"
+      },
+      "salt": {
+        "id": "salt",
+        "name": "salt",
+        "default_unit": "g"
+      },
+      "sugar": {
+        "id": "sugar",
+        "name": "sugar",
+        "default_unit": "tbsp"
+      },
+      "yeast": {
+        "id": "yeast",
+        "name": "yeast",
+        "default_unit": "g"
+      },
+      "milk": {
+        "id": "milk",
+        "name": "milk",
+        "default_unit": "L"
+      },
+      "butter": {
+        "id": "butter",
+        "name": "butter",
+        "default_unit": "cup"
+      },
+      "oil": {
+        "id": "oil",
+        "name": "oil",
+        "default_unit": "tbsp"
+      },
+      "pepper": {
+        "id": "pepper",
+        "name": "pepper",
+        "default_unit": "tsp"
+      },
+      "egg": {
+        "id": "egg",
+        "name": "egg"
+      },
+      "apple": {
+        "id": "apple",
+        "name": "apple"
+      },
+      "nutmeg": {
+        "id": "nutmeg",
+        "name": "nutmeg"
+      },
+      "cinnamon": {
+        "id": "cinnamon",
+        "name": "cinnamon",
+        "default_unit": "tsp"
+      },
+      "secret-spice": {
+        "id": "secret-spice",
+        "name": "secret spice",
+        "default_unit": "pinch"
+      },
+      "starter": {
+        "id": "starter",
+        "name": "starter",
+        "default_unit": "g"
+      },
+      "love": {
+        "id": "love",
+        "name": "love",
+        "default_unit": "lot"
+      },
+      "white-sugar": {
+        "id": "white-sugar",
+        "name": "white sugar",
+        "default_unit": "g"
+      },
+      "brown-sugar": {
+        "id": "brown-sugar",
+        "name": "brown sugar",
+        "default_unit": "g"
+      },
+      "lemon-zest": {
+        "id": "lemon-zest",
+        "name": "lemon zest",
+        "is_composite": true,
+        "parent": "lemon"
+      },
+      "lemon": {
+        "id": "lemon",
+        "name": "lemon",
+        "is_composite": true
+      },
+      "lemon-juice": {
+        "id": "lemon-juice",
+        "name": "lemon juice",
+        "default_unit": "ml",
+        "is_composite": true,
+        "parent": "lemon"
+      },
+      "orange-zest": {
+        "id": "orange-zest",
+        "name": "orange zest",
+        "is_composite": true,
+        "parent": "orange"
+      },
+      "orange": {
+        "id": "orange",
+        "name": "orange",
+        "is_composite": true
+      },
+      "orange-pulp": {
+        "id": "orange-pulp",
+        "name": "orange pulp",
+        "default_unit": "g",
+        "is_composite": true,
+        "parent": "orange"
+      },
+      "orange-slices": {
+        "id": "orange-slices",
+        "name": "orange slices",
+        "is_composite": true,
+        "parent": "orange"
+      },
+      "lime-zest": {
+        "id": "lime-zest",
+        "name": "lime zest",
+        "is_composite": true,
+        "parent": "lime"
+      },
+      "lime": {
+        "id": "lime",
+        "name": "lime",
+        "is_composite": true
+      },
+      "chili-flakes": {
+        "id": "chili-flakes",
+        "name": "chili flakes",
+        "default_unit": "tsp"
+      },
+      "paprika": {
+        "id": "paprika",
+        "name": "paprika",
+        "default_unit": "tsp"
+      },
+      "honey": {
+        "id": "honey",
+        "name": "honey"
+      },
+      "maple-syrup": {
+        "id": "maple-syrup",
+        "name": "maple syrup"
+      },
+      "cream": {
+        "id": "cream",
+        "name": "cream",
+        "default_unit": "ml"
+      },
+      "slurry": {
+        "id": "slurry",
+        "name": "slurry",
+        "is_intermediate": true
+      },
+      "filling": {
+        "id": "filling",
+        "name": "filling",
+        "is_intermediate": true
+      },
+      "cheese": {
+        "id": "cheese",
+        "name": "cheese",
+        "default_unit": "g"
+      },
+      "herbs": {
+        "id": "herbs",
+        "name": "herbs"
+      },
+      "garlic": {
+        "id": "garlic",
+        "name": "garlic"
+      },
+      "tomato": {
+        "id": "tomato",
+        "name": "tomato"
+      },
+      "olive-oil": {
+        "id": "olive-oil",
+        "name": "olive oil",
+        "default_unit": "tbsp"
+      },
+      "cocoa-powder": {
+        "id": "cocoa-powder",
+        "name": "cocoa-powder"
+      }
+    },
+    "cookware": {
+      "bowl": {
+        "id": "bowl",
+        "name": "bowl"
+      },
+      "ramekins": {
+        "id": "ramekins",
+        "name": "ramekins"
+      },
+      "frying-pan": {
+        "id": "frying-pan",
+        "name": "frying pan"
+      },
+      "forks": {
+        "id": "forks",
+        "name": "forks"
+      },
+      "whisk": {
+        "id": "whisk",
+        "name": "whisk"
+      },
+      "fork": {
+        "id": "fork",
+        "name": "fork"
+      },
+      "oven": {
+        "id": "oven",
+        "name": "oven"
+      },
+      "air-fryer": {
+        "id": "air-fryer",
+        "name": "air fryer"
+      },
+      "thermometer": {
+        "id": "thermometer",
+        "name": "thermometer"
+      },
+      "pan": {
+        "id": "pan",
+        "name": "pan"
+      },
+      "plate": {
+        "id": "plate",
+        "name": "plate"
+      }
+    }
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "qty": 670,
+      "unit": "g"
+    },
+    {
+      "id": "water",
+      "qty": 350,
+      "unit": "ml"
+    },
+    {
+      "id": "salt",
+      "qty": 15,
+      "unit": "g"
+    },
+    {
+      "id": "sugar",
+      "qty": 1,
+      "unit": "tbsp"
+    },
+    {
+      "id": "yeast",
+      "qty": 7,
+      "unit": "g"
+    },
+    {
+      "id": "milk",
+      "qty": 1500,
+      "unit": "ml"
+    },
+    {
+      "id": "butter",
+      "qty": 0.5,
+      "unit": "cup"
+    },
+    {
+      "id": "oil",
+      "qty": 1.5,
+      "unit": "tbsp"
+    },
+    {
+      "id": "pepper",
+      "qty": 0.75,
+      "unit": "tsp"
+    },
+    {
+      "id": "egg",
+      "qty": 1
+    },
+    {
+      "id": "apple",
+      "qty": 2.5
+    },
+    {
+      "id": "nutmeg"
+    },
+    {
+      "id": "cinnamon",
+      "qty": 1,
+      "unit": "tsp"
+    },
+    {
+      "id": "secret-spice",
+      "qty": 1,
+      "unit": "pinch"
+    },
+    {
+      "id": "starter",
+      "qty": 100,
+      "unit": "g"
+    },
+    {
+      "id": "love",
+      "qty": 1,
+      "unit": "lot"
+    },
+    {
+      "id": "white-sugar",
+      "qty": 100,
+      "unit": "g"
+    },
+    {
+      "id": "brown-sugar",
+      "qty": 50,
+      "unit": "g"
+    },
+    {
+      "id": "cheese",
+      "qty": 200,
+      "unit": "g"
+    },
+    {
+      "id": "herbs"
+    },
+    {
+      "id": "garlic",
+      "qty": 1
+    },
+    {
+      "id": "pepper"
+    },
+    {
+      "id": "tomato",
+      "qty": 1
+    },
+    {
+      "id": "olive-oil",
+      "qty": 2,
+      "unit": "tbsp"
+    },
+    {
+      "id": "cocoa-powder"
+    },
+    {
+      "type": "composite",
+      "id": "lemon",
+      "qty": 1,
+      "usage": [
+        {
+          "id": "lemon-zest",
+          "qty": 1
+        },
+        {
+          "id": "lemon-juice",
+          "qty": 10,
+          "unit": "ml"
+        }
+      ]
+    },
+    {
+      "type": "composite",
+      "id": "orange",
+      "qty": 3,
+      "usage": [
+        {
+          "id": "orange-zest",
+          "qty": 1
+        },
+        {
+          "id": "orange-pulp",
+          "qty": 100,
+          "unit": "g"
+        },
+        {
+          "id": "orange-slices",
+          "qty": 2
+        }
+      ]
+    },
+    {
+      "type": "composite",
+      "id": "lime",
+      "qty": 1,
+      "usage": [
+        {
+          "id": "lime-zest",
+          "qty": 1,
+          "alias": "Green Dust"
+        }
+      ]
+    },
+    {
+      "type": "alternative",
+      "options": [
+        {
+          "id": "milk",
+          "qty": 100,
+          "unit": "ml"
+        },
+        {
+          "id": "water",
+          "qty": 100,
+          "unit": "ml"
+        }
+      ]
+    },
+    {
+      "type": "alternative",
+      "options": [
+        {
+          "id": "chili-flakes",
+          "qty": 1,
+          "unit": "tsp",
+          "modifiers": [
+            "optional"
+          ]
+        },
+        {
+          "id": "paprika",
+          "qty": 1,
+          "unit": "tsp"
+        }
+      ]
+    },
+    {
+      "type": "alternative",
+      "options": [
+        {
+          "id": "honey",
+          "alias": "Sweetener A"
+        },
+        {
+          "id": "maple-syrup",
+          "alias": "Sweetener B"
+        }
+      ]
+    },
+    {
+      "type": "alternative",
+      "options": [
+        {
+          "id": "cream",
+          "qty": 100,
+          "unit": "ml"
+        },
+        {
+          "id": "milk",
+          "qty": 150,
+          "unit": "ml"
+        }
+      ]
+    }
+  ],
+  "cookware": [
+    {
+      "id": "bowl"
+    },
+    {
+      "id": "ramekins",
+      "qty": 4,
+      "fixed": false
+    },
+    {
+      "id": "frying-pan",
+      "qty": 1
+    },
+    {
+      "id": "forks",
+      "qty": 4,
+      "fixed": false
+    },
+    {
+      "type": "alternative",
+      "options": [
+        {
+          "id": "whisk"
+        },
+        {
+          "id": "fork"
+        }
+      ]
+    },
+    {
+      "type": "alternative",
+      "options": [
+        {
+          "id": "oven"
+        },
+        {
+          "id": "air-fryer"
+        }
+      ]
+    },
+    {
+      "id": "thermometer",
+      "modifiers": [
+        "optional"
+      ],
+      "preparation": "optional"
+    },
+    {
+      "id": "bowl",
+      "modifiers": [
+        "reference"
+      ]
+    },
+    {
+      "id": "bowl"
+    },
+    {
+      "id": "pan"
+    },
+    {
+      "id": "plate",
+      "qty": 4,
+      "preparation": "fixed count"
+    }
+  ],
+  "sections": [
+    {
+      "title": "1. Basic Ingredients & Quantities",
+      "ingredients": [
+        {
+          "id": "flour",
+          "qty": 500,
+          "unit": "g"
+        },
+        {
+          "id": "water",
+          "qty": 300,
+          "unit": "ml"
+        },
+        {
+          "id": "salt",
+          "qty": 10,
+          "unit": "g"
+        },
+        {
+          "id": "sugar",
+          "qty": 1,
+          "unit": "tbsp"
+        },
+        {
+          "id": "yeast",
+          "qty": 7,
+          "unit": "g"
+        },
+        {
+          "id": "milk",
+          "qty": 1.5,
+          "unit": "L"
+        },
+        {
+          "id": "butter",
+          "qty": {
+            "type": "fraction",
+            "value": 0.5,
+            "numerator": 1,
+            "denominator": 2,
+            "text": "1/2"
+          },
+          "unit": "cup"
+        },
+        {
+          "id": "oil",
+          "qty": {
+            "type": "range",
+            "value": 1.5,
+            "range": {
+              "min": 1,
+              "max": 2
+            },
+            "text": "1-2"
+          },
+          "unit": "tbsp"
+        },
+        {
+          "id": "pepper",
+          "qty": {
+            "type": "range",
+            "value": 0.75,
+            "range": {
+              "min": 0.5,
+              "max": 1
+            },
+            "text": "0.5-1"
+          },
+          "unit": "tsp"
+        },
+        {
+          "id": "egg",
+          "qty": 1
+        },
+        {
+          "id": "apple",
+          "qty": {
+            "type": "range",
+            "value": 2.5,
+            "range": {
+              "min": 2,
+              "max": 3
+            },
+            "text": "2-3"
+          }
+        },
+        {
+          "id": "nutmeg"
+        }
+      ],
+      "steps": [
+        {
+          "type": "comment",
+          "value": "Sanity check for standard parsing",
+          "kind": "line"
+        },
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "flour",
+              "qty": 500,
+              "unit": "g"
+            },
+            "with ",
+            {
+              "id": "water",
+              "qty": 300,
+              "unit": "ml"
+            },
+            ".",
+            " ",
+            "Add ",
+            {
+              "id": "salt",
+              "qty": 10,
+              "unit": "g"
+            },
+            ", ",
+            {
+              "id": "sugar",
+              "qty": 1,
+              "unit": "tbsp"
+            },
+            ", and ",
+            {
+              "id": "yeast",
+              "qty": 7,
+              "unit": "g"
+            },
+            ".",
+            " ",
+            "Use different number formats: ",
+            {
+              "id": "milk",
+              "qty": 1.5,
+              "unit": "L"
+            },
+            "(decimal), ",
+            {
+              "id": "butter",
+              "qty": {
+                "type": "fraction",
+                "value": 0.5,
+                "numerator": 1,
+                "denominator": 2,
+                "text": "1/2"
+              },
+              "unit": "cup"
+            },
+            "(fraction), ",
+            {
+              "id": "oil",
+              "qty": {
+                "type": "range",
+                "value": 1.5,
+                "range": {
+                  "min": 1,
+                  "max": 2
+                },
+                "text": "1-2"
+              },
+              "unit": "tbsp"
+            },
+            "(range), ",
+            {
+              "id": "pepper",
+              "qty": {
+                "type": "range",
+                "value": 0.75,
+                "range": {
+                  "min": 0.5,
+                  "max": 1
+                },
+                "text": "0.5-1"
+              },
+              "unit": "tsp"
+            },
+            "(decimal range).",
+            " ",
+            "Test no units: ",
+            {
+              "id": "egg",
+              "qty": 1
+            },
+            "and ",
+            {
+              "id": "apple",
+              "qty": {
+                "type": "range",
+                "value": 2.5,
+                "range": {
+                  "min": 2,
+                  "max": 3
+                },
+                "text": "2-3"
+              }
+            },
+            ".",
+            " ",
+            "Test implicit quantity: ",
+            {
+              "id": "nutmeg"
+            },
+            "(should be \"to taste\")."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "2. Modifiers Extravaganza",
+      "ingredients": [
+        {
+          "id": "salt",
+          "qty": 5,
+          "unit": "g",
+          "fixed": true
+        },
+        {
+          "id": "cinnamon",
+          "qty": 1,
+          "unit": "tsp",
+          "modifiers": [
+            "optional"
+          ]
+        },
+        {
+          "id": "secret-spice",
+          "qty": 1,
+          "unit": "pinch",
+          "modifiers": [
+            "hidden"
+          ]
+        },
+        {
+          "id": "flour",
+          "qty": 50,
+          "unit": "g",
+          "modifiers": [
+            "reference"
+          ]
+        },
+        {
+          "id": "starter",
+          "qty": 100,
+          "unit": "g",
+          "modifiers": [
+            "bakers_percentage"
+          ]
+        },
+        {
+          "id": "love",
+          "qty": 1,
+          "unit": "lot",
+          "modifiers": [
+            "hidden"
+          ],
+          "fixed": true
+        },
+        {
+          "id": "flour",
+          "qty": 20,
+          "unit": "g",
+          "modifiers": [
+            "reference"
+          ],
+          "alias": "dusting flour"
+        }
+      ],
+      "steps": [
+        {
+          "type": "comment",
+          "value": "Testing ?, -, &, *, = and their combinations",
+          "kind": "line"
+        },
+        {
+          "type": "step",
+          "content": [
+            "Essential: ",
+            {
+              "id": "salt",
+              "qty": 5,
+              "unit": "g",
+              "fixed": true
+            },
+            "(Explicit fixed quantity).",
+            " ",
+            "Optional: ",
+            {
+              "id": "cinnamon",
+              "qty": 1,
+              "unit": "tsp",
+              "modifiers": [
+                "optional"
+              ]
+            },
+            "(Optional).",
+            " ",
+            "Hidden: ",
+            {
+              "id": "secret-spice",
+              "qty": 1,
+              "unit": "pinch",
+              "modifiers": [
+                "hidden"
+              ]
+            },
+            "(Hidden from list).",
+            " ",
+            "Reference: ",
+            {
+              "id": "flour",
+              "qty": 50,
+              "unit": "g",
+              "modifiers": [
+                "reference"
+              ]
+            },
+            "(Adding MORE flour to the sum).",
+            " ",
+            "Reference No-Qty: ",
+            {
+              "id": "water",
+              "modifiers": [
+                "reference"
+              ]
+            },
+            "(Using previously defined water).",
+            " ",
+            "Baker's Percentage: ",
+            {
+              "id": "starter",
+              "qty": 100,
+              "unit": "g",
+              "modifiers": [
+                "bakers_percentage"
+              ]
+            },
+            "(The reference for 100%)."
+          ]
+        },
+        {
+          "type": "comment",
+          "value": "Combinations",
+          "kind": "line"
+        },
+        {
+          "type": "step",
+          "content": [
+            "Optional Reference: ",
+            {
+              "id": "sugar",
+              "modifiers": [
+                "optional",
+                "reference"
+              ],
+              "preparation": "add more if needed"
+            },
+            ".",
+            " ",
+            "Hidden Fixed: ",
+            {
+              "id": "love",
+              "qty": 1,
+              "unit": "lot",
+              "modifiers": [
+                "hidden"
+              ],
+              "fixed": true
+            },
+            ".",
+            " ",
+            "Reference with Alias: ",
+            {
+              "id": "flour",
+              "qty": 20,
+              "unit": "g",
+              "modifiers": [
+                "reference"
+              ],
+              "alias": "dusting flour"
+            },
+            "."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "3. Aliases & Display Names",
+      "ingredients": [
+        {
+          "id": "white-sugar",
+          "qty": 100,
+          "unit": "g",
+          "alias": "Counter Sugar"
+        },
+        {
+          "id": "brown-sugar",
+          "qty": 50,
+          "unit": "g",
+          "alias": "Fancy Sugar"
+        }
+      ],
+      "steps": [
+        {
+          "type": "comment",
+          "value": "Renaming ingredients for clarity",
+          "kind": "line"
+        },
+        {
+          "type": "step",
+          "content": [
+            "Use ",
+            {
+              "id": "white-sugar",
+              "qty": 100,
+              "unit": "g",
+              "alias": "Counter Sugar"
+            },
+            ".",
+            " ",
+            "Mix with ",
+            {
+              "id": "brown-sugar",
+              "qty": 50,
+              "unit": "g",
+              "alias": "Fancy Sugar"
+            },
+            ".",
+            " ",
+            "Even references: ",
+            {
+              "id": "white-sugar",
+              "modifiers": [
+                "reference"
+              ],
+              "alias": "The same sugar"
+            },
+            "."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "4. Composites & Sources (The MAX Logic)",
+      "ingredients": [
+        {
+          "id": "lemon-zest",
+          "qty": 1,
+          "composite": {
+            "parent": "lemon",
+            "quantity": {
+              "type": "single",
+              "value": 1,
+              "text": "1"
+            }
+          }
+        },
+        {
+          "id": "lemon-juice",
+          "qty": 10,
+          "unit": "ml",
+          "composite": {
+            "parent": "lemon"
+          }
+        },
+        {
+          "id": "orange-zest",
+          "qty": 1,
+          "composite": {
+            "parent": "orange",
+            "quantity": {
+              "type": "single",
+              "value": 2,
+              "text": "2"
+            }
+          }
+        },
+        {
+          "id": "orange-pulp",
+          "qty": 100,
+          "unit": "g",
+          "composite": {
+            "parent": "orange"
+          }
+        },
+        {
+          "id": "orange-slices",
+          "qty": 2,
+          "composite": {
+            "parent": "orange",
+            "quantity": {
+              "type": "single",
+              "value": 3,
+              "text": "3"
+            }
+          }
+        },
+        {
+          "id": "lime-zest",
+          "qty": 1,
+          "alias": "Green Dust",
+          "composite": {
+            "parent": "lime",
+            "quantity": {
+              "type": "single",
+              "value": 1,
+              "text": "1"
+            }
+          }
+        }
+      ],
+      "steps": [
+        {
+          "type": "comment",
+          "value": "Testing parent/child relationships",
+          "kind": "line"
+        },
+        {
+          "type": "step",
+          "content": [
+            "Zest logic:",
+            " ",
+            "Need ",
+            {
+              "id": "lemon-zest",
+              "qty": 1,
+              "composite": {
+                "parent": "lemon",
+                "quantity": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                }
+              }
+            },
+            "(driver) and ",
+            {
+              "id": "lemon-juice",
+              "qty": 10,
+              "unit": "ml",
+              "composite": {
+                "parent": "lemon"
+              }
+            },
+            "(passenger).",
+            " ",
+            "Result should be MAX(1, 0) = 1 Lemon."
+          ]
+        },
+        {
+          "type": "step",
+          "content": [
+            "Complex logic:",
+            " ",
+            {
+              "id": "orange-zest",
+              "qty": 1,
+              "composite": {
+                "parent": "orange",
+                "quantity": {
+                  "type": "single",
+                  "value": 2,
+                  "text": "2"
+                }
+              }
+            },
+            "(driver 1).",
+            " ",
+            {
+              "id": "orange-pulp",
+              "qty": 100,
+              "unit": "g",
+              "composite": {
+                "parent": "orange"
+              }
+            },
+            "(passenger).",
+            " ",
+            {
+              "id": "orange-slices",
+              "qty": 2,
+              "composite": {
+                "parent": "orange",
+                "quantity": {
+                  "type": "single",
+                  "value": 3,
+                  "text": "3"
+                }
+              }
+            },
+            "(driver 2 - MAX wins).",
+            " ",
+            "Result should be MAX(2, 0, 3) = 3 Oranges."
+          ]
+        },
+        {
+          "type": "step",
+          "content": [
+            "Composite with alias:",
+            " ",
+            {
+              "id": "lime-zest",
+              "qty": 1,
+              "alias": "Green Dust",
+              "composite": {
+                "parent": "lime",
+                "quantity": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                }
+              }
+            },
+            "."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "5. Alternatives (The Pipe Dreams)",
+      "ingredients": [
+        {
+          "type": "alternative",
+          "options": [
+            {
+              "id": "milk",
+              "qty": 100,
+              "unit": "ml"
+            },
+            {
+              "id": "water",
+              "qty": 100,
+              "unit": "ml"
+            }
+          ]
+        },
+        {
+          "type": "alternative",
+          "options": [
+            {
+              "id": "chili-flakes",
+              "qty": 1,
+              "unit": "tsp",
+              "modifiers": [
+                "optional"
+              ]
+            },
+            {
+              "id": "paprika",
+              "qty": 1,
+              "unit": "tsp"
+            }
+          ]
+        },
+        {
+          "type": "alternative",
+          "options": [
+            {
+              "id": "honey",
+              "alias": "Sweetener A"
+            },
+            {
+              "id": "maple-syrup",
+              "alias": "Sweetener B"
+            }
+          ]
+        },
+        {
+          "type": "alternative",
+          "options": [
+            {
+              "id": "cream",
+              "qty": 100,
+              "unit": "ml"
+            },
+            {
+              "id": "milk",
+              "qty": 150,
+              "unit": "ml"
+            }
+          ]
+        }
+      ],
+      "steps": [
+        {
+          "type": "comment",
+          "value": "Testing choice logic",
+          "kind": "line"
+        },
+        {
+          "type": "step",
+          "content": [
+            "Simple choice: ",
+            {
+              "type": "alternative",
+              "options": [
+                {
+                  "id": "milk",
+                  "qty": 100,
+                  "unit": "ml"
+                },
+                {
+                  "id": "water",
+                  "qty": 100,
+                  "unit": "ml"
+                }
+              ]
+            },
+            ".",
+            " ",
+            "Choice with modifiers: ",
+            {
+              "type": "alternative",
+              "options": [
+                {
+                  "id": "chili-flakes",
+                  "qty": 1,
+                  "unit": "tsp",
+                  "modifiers": [
+                    "optional"
+                  ]
+                },
+                {
+                  "id": "paprika",
+                  "qty": 1,
+                  "unit": "tsp"
+                }
+              ]
+            },
+            ".",
+            " ",
+            "Choice with alias: ",
+            {
+              "type": "alternative",
+              "options": [
+                {
+                  "id": "honey",
+                  "alias": "Sweetener A"
+                },
+                {
+                  "id": "maple-syrup",
+                  "alias": "Sweetener B"
+                }
+              ]
+            },
+            ".",
+            " ",
+            "Choice with quantity variation: ",
+            {
+              "type": "alternative",
+              "options": [
+                {
+                  "id": "cream",
+                  "qty": 100,
+                  "unit": "ml"
+                },
+                {
+                  "id": "milk",
+                  "qty": 150,
+                  "unit": "ml"
+                }
+              ]
+            },
+            "."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "6. Cookware Logic",
+      "cookware": [
+        {
+          "id": "bowl"
+        },
+        {
+          "id": "ramekins",
+          "qty": 4,
+          "fixed": false
+        },
+        {
+          "id": "frying-pan",
+          "qty": 1
+        },
+        {
+          "id": "forks",
+          "qty": 4,
+          "fixed": false
+        },
+        {
+          "type": "alternative",
+          "options": [
+            {
+              "id": "whisk"
+            },
+            {
+              "id": "fork"
+            }
+          ]
+        },
+        {
+          "type": "alternative",
+          "options": [
+            {
+              "id": "oven"
+            },
+            {
+              "id": "air-fryer"
+            }
+          ]
+        },
+        {
+          "id": "thermometer",
+          "modifiers": [
+            "optional"
+          ],
+          "preparation": "optional"
+        },
+        {
+          "id": "bowl",
+          "modifiers": [
+            "reference"
+          ]
+        }
+      ],
+      "steps": [
+        {
+          "type": "comment",
+          "value": "Testing scaling rules",
+          "kind": "line"
+        },
+        {
+          "type": "step",
+          "content": [
+            "Implicit Fixed: ",
+            {
+              "id": "bowl"
+            },
+            "(Should be fixed: true).",
+            " ",
+            "Implicit Scalable: ",
+            {
+              "id": "ramekins",
+              "qty": 4,
+              "fixed": false
+            },
+            "(Should be fixed: false, scales with servings).",
+            " ",
+            "Explicit Fixed: ",
+            {
+              "id": "frying-pan",
+              "qty": 1
+            },
+            "(Fixed: true, even if I make 100 servings).",
+            " ",
+            "Explicit Scalable?: ",
+            {
+              "id": "forks",
+              "qty": 4,
+              "fixed": false
+            },
+            "(Standard scalable)."
+          ]
+        },
+        {
+          "type": "step",
+          "content": [
+            "Alternatives in cookware:",
+            " ",
+            "Use a ",
+            {
+              "type": "alternative",
+              "options": [
+                {
+                  "id": "whisk"
+                },
+                {
+                  "id": "fork"
+                }
+              ]
+            },
+            "to mix.",
+            " ",
+            "Cook in ",
+            {
+              "type": "alternative",
+              "options": [
+                {
+                  "id": "oven"
+                },
+                {
+                  "id": "air-fryer"
+                }
+              ]
+            },
+            "."
+          ]
+        },
+        {
+          "type": "step",
+          "content": [
+            "Cookware with modifiers:",
+            " ",
+            "Use a ",
+            {
+              "id": "thermometer",
+              "modifiers": [
+                "optional"
+              ],
+              "preparation": "optional"
+            },
+            ".",
+            " ",
+            "Store in ",
+            {
+              "id": "bowl",
+              "modifiers": [
+                "reference"
+              ]
+            },
+            "(reference to previous bowl)."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "7. Timers & Temperatures",
+      "steps": [
+        {
+          "type": "comment",
+          "value": "Testing non-ingredient values",
+          "kind": "line"
+        },
+        {
+          "type": "step",
+          "content": [
+            "Bake for ",
+            {
+              "type": "timer",
+              "quantity": {
+                "type": "single",
+                "value": 30,
+                "text": "30"
+              },
+              "unit": "min",
+              "fixed": true
+            },
+            "at ",
+            {
+              "type": "temperature",
+              "quantity": {
+                "type": "single",
+                "value": 180,
+                "text": "180"
+              },
+              "unit": "°C",
+              "fixed": true
+            },
+            ".",
+            " ",
+            "Named timer: ",
+            {
+              "type": "timer",
+              "name": "rise",
+              "quantity": {
+                "type": "range",
+                "value": 1.5,
+                "range": {
+                  "min": 1,
+                  "max": 2
+                },
+                "text": "1-2"
+              },
+              "unit": "hours",
+              "fixed": true
+            },
+            ".",
+            " ",
+            "Named temp: ",
+            {
+              "type": "temperature",
+              "name": "oven",
+              "quantity": {
+                "type": "single",
+                "value": 200,
+                "text": "200"
+              },
+              "unit": "°C",
+              "fixed": true
+            },
+            "or ",
+            {
+              "type": "temperature",
+              "name": "fan oven",
+              "quantity": {
+                "type": "single",
+                "value": 180,
+                "text": "180"
+              },
+              "unit": "°C",
+              "fixed": true
+            },
+            ".",
+            " ",
+            "Ranges: ",
+            {
+              "type": "timer",
+              "quantity": {
+                "type": "range",
+                "value": 12.5,
+                "range": {
+                  "min": 10,
+                  "max": 15
+                },
+                "text": "10-15"
+              },
+              "unit": "minutes",
+              "fixed": true
+            },
+            ".",
+            " ",
+            "Decimals: ",
+            {
+              "type": "timer",
+              "quantity": {
+                "type": "single",
+                "value": 1.5,
+                "text": "1.5"
+              },
+              "unit": "hours",
+              "fixed": true
+            },
+            "."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "8. Intermediate Preparations (The Flow)",
+      "ingredients": [
+        {
+          "id": "flour",
+          "qty": 100,
+          "unit": "g"
+        },
+        {
+          "id": "water",
+          "qty": 50,
+          "unit": "ml"
+        }
+      ],
+      "cookware": [
+        {
+          "id": "bowl"
+        }
+      ],
+      "steps": [
+        {
+          "type": "comment",
+          "value": "Testing step results",
+          "kind": "line"
+        },
+        {
+          "type": "step",
+          "content": [
+            {
+              "id": "flour",
+              "qty": 100,
+              "unit": "g"
+            },
+            "and ",
+            {
+              "id": "water",
+              "qty": 50,
+              "unit": "ml"
+            },
+            "in a ",
+            {
+              "id": "bowl"
+            },
+            ". "
+          ],
+          "action": "Mix",
+          "intermediate_preparation": "slurry"
+        },
+        {
+          "type": "step",
+          "content": [
+            "Let the ",
+            {
+              "type": "reference",
+              "id": "slurry"
+            },
+            "sit for ",
+            {
+              "type": "timer",
+              "quantity": {
+                "type": "single",
+                "value": 5,
+                "text": "5"
+              },
+              "unit": "min",
+              "fixed": true
+            },
+            "."
+          ],
+          "action": "Rest"
+        }
+      ]
+    },
+    {
+      "title": "Section 2",
+      "ingredients": [
+        {
+          "id": "cheese",
+          "qty": 200,
+          "unit": "g"
+        },
+        {
+          "id": "herbs"
+        }
+      ],
+      "steps": [
+        {
+          "type": "comment",
+          "value": "Section-level intermediate prep",
+          "kind": "line"
+        },
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "cheese",
+              "qty": 200,
+              "unit": "g"
+            },
+            "and ",
+            {
+              "id": "herbs"
+            },
+            ".",
+            " ",
+            "This entire section produces ",
+            {
+              "type": "reference",
+              "id": "filling"
+            },
+            "."
+          ]
+        }
+      ],
+      "intermediate_preparation": "filling"
+    },
+    {
+      "title": "9. Final Assembly (The Usage)",
+      "cookware": [
+        {
+          "id": "pan"
+        },
+        {
+          "id": "plate",
+          "qty": 4,
+          "preparation": "fixed count"
+        }
+      ],
+      "steps": [
+        {
+          "type": "comment",
+          "value": "Referencing everything",
+          "kind": "line"
+        },
+        {
+          "type": "step",
+          "content": [
+            "Take the ",
+            {
+              "type": "reference",
+              "id": "slurry"
+            },
+            "and the ",
+            {
+              "type": "reference",
+              "id": "filling"
+            },
+            ".",
+            " ",
+            "Combine in ",
+            {
+              "id": "pan"
+            },
+            ".",
+            " ",
+            "Cook for ",
+            {
+              "type": "timer",
+              "name": "final cook",
+              "quantity": {
+                "type": "single",
+                "value": 10,
+                "text": "10"
+              },
+              "unit": "min",
+              "fixed": true
+            },
+            "at ",
+            {
+              "type": "temperature",
+              "name": "stove",
+              "quantity": {
+                "type": "text",
+                "value": "low heat"
+              },
+              "fixed": true
+            },
+            ".",
+            " ",
+            "Serve on ",
+            {
+              "id": "plate",
+              "qty": 4,
+              "preparation": "fixed count"
+            },
+            "."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "10. Syntax Stress & Comments",
+      "ingredients": [
+        {
+          "id": "garlic",
+          "qty": 1
+        },
+        {
+          "id": "pepper"
+        },
+        {
+          "id": "tomato",
+          "qty": 1,
+          "preparation": "ripe"
+        },
+        {
+          "id": "olive-oil",
+          "qty": 2,
+          "unit": "tbsp"
+        },
+        {
+          "id": "cocoa-powder"
+        }
+      ],
+      "steps": [
+        {
+          "type": "comment",
+          "value": "Breaking the parser",
+          "kind": "line"
+        },
+        {
+          "type": "comment",
+          "value": "Single line comment",
+          "kind": "line"
+        },
+        {
+          "type": "step",
+          "content": [
+            {
+              "type": "comment",
+              "value": "Block \n   comment",
+              "kind": "block"
+            },
+            " ",
+            "   ",
+            " ",
+            "Test inline comments: ",
+            {
+              "id": "garlic",
+              "qty": 1
+            },
+            {
+              "type": "comment",
+              "value": "pungent!",
+              "kind": "line"
+            },
+            " ",
+            "Test adjacent punctuation: Add ",
+            {
+              "id": "pepper"
+            },
+            ", then salt.",
+            " ",
+            "Test parenthesis: (",
+            {
+              "id": "tomato",
+              "qty": 1,
+              "preparation": "ripe"
+            },
+            ").",
+            " ",
+            "Test weird spacing: ",
+            {
+              "id": "olive-oil",
+              "qty": 2,
+              "unit": "tbsp"
+            },
+            ".",
+            " ",
+            "Test special chars in names: ",
+            "@",
+            "M",
+            "&",
+            "M's{100%g} (if supported), or ",
+            {
+              "id": "cocoa-powder"
+            },
+            "."
+          ]
+        }
+      ]
+    }
+  ]
+}

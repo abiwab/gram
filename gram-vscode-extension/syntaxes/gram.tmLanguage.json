@@ -1,0 +1,201 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Gram",
+  "scopeName": "source.gram",
+  "patterns": [
+    { "include": "#frontmatter" },
+    { "include": "#comments" },
+    { "include": "#sections" },
+    { "include": "#actions" },
+    { "include": "#elements" }
+  ],
+  "repository": {
+    "frontmatter": {
+      "begin": "^---$",
+      "end": "^---$",
+      "name": "meta.embedded.block.frontmatter",
+      "patterns": [{ "include": "source.yaml" }]
+    },
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.gram",
+          "match": "//.*$"
+        },
+        {
+          "name": "comment.block.gram",
+          "begin": "/\\*",
+          "end": "\\*/"
+        }
+      ]
+    },
+    "sections": {
+      "match": "^(##)\\s+([^\\{\\n<]+)(?:\\s*(\\{T-[^\\}]+\\}))?(?:\\s*(->&)\\s*([\\w\\d]+)\\s*(\\{\\}))?",
+      "captures": {
+        "1": { "name": "markup.heading.marker.gram" },
+        "2": { "name": "entity.name.section.gram" },
+        "3": { "name": "entity.name.tag.retro.gram" },
+        "4": { "name": "keyword.operator.arrow.gram" },
+        "5": { "name": "variable.other.intermediate.gram" },
+        "6": { "name": "punctuation.section.embedded.gram" }
+      }
+    },
+    "actions": {
+      "match": "^\\s*(\\[)([^\\]]+)(\\])",
+      "captures": {
+        "1": { "name": "punctuation.definition.tag.begin.gram" },
+        "2": { "name": "entity.name.function.action.gram" },
+        "3": { "name": "punctuation.definition.tag.end.gram" }
+      }
+    },
+    "elements": {
+      "patterns": [
+        { "include": "#ingredients" },
+        { "include": "#cookware" },
+        { "include": "#timers" },
+        { "include": "#temperatures" },
+        { "include": "#references" },
+        { "include": "#composites" },
+        { "include": "#intermediate-decl" }
+      ]
+    },
+    "ingredients": {
+      "name": "meta.ingredient.gram",
+      "begin": "(@)([-?&*]*)([^\\{\\[@#~!<]+?)(?:\\[([^\\]]+)\\])?(\\{)",
+      "beginCaptures": {
+        "1": { "name": "keyword.control.ingredient.gram" },
+        "2": { "name": "storage.modifier.gram" },
+        "3": { "name": "variable.parameter.ingredient.gram" },
+        "4": { "name": "string.other.alias.gram" },
+        "5": { "name": "punctuation.section.embedded.begin.gram" }
+      },
+      "end": "(\\})(?:\\(([^)]+)\\))?",
+      "endCaptures": {
+        "1": { "name": "punctuation.section.embedded.end.gram" },
+        "2": { "name": "string.other.preparation.gram" }
+      },
+      "patterns": [
+        { "include": "#quantity-content" }
+      ]
+    },
+    "cookware": {
+      "name": "meta.cookware.gram",
+      "begin": "(#)([-?&*]*)([^\\{\\[@#~!<]+?)(?:\\[([^\\]]+)\\])?(\\{)",
+      "beginCaptures": {
+        "1": { "name": "keyword.control.cookware.gram" },
+        "2": { "name": "storage.modifier.gram" },
+        "3": { "name": "variable.other.cookware.gram" },
+        "4": { "name": "string.other.alias.gram" },
+        "5": { "name": "punctuation.section.embedded.begin.gram" }
+      },
+      "end": "(\\})(?:\\(([^)]+)\\))?",
+      "endCaptures": {
+        "1": { "name": "punctuation.section.embedded.end.gram" },
+        "2": { "name": "string.other.preparation.gram" }
+      },
+      "patterns": [
+        { "include": "#quantity-content" }
+      ]
+    },
+    "timers": {
+      "name": "meta.timer.gram",
+      "begin": "(~)([\\w\\s]+)?(\\{)",
+      "beginCaptures": {
+        "1": { "name": "keyword.control.timer.gram" },
+        "2": { "name": "variable.other.timer.gram" },
+        "3": { "name": "punctuation.section.embedded.begin.gram" }
+      },
+      "end": "(\\})",
+      "endCaptures": {
+        "1": { "name": "punctuation.section.embedded.end.gram" }
+      },
+      "patterns": [ { "include": "#quantity-content" } ]
+    },
+    "temperatures": {
+      "name": "meta.temperature.gram",
+      "begin": "(!)([\\w\\s]+)?(\\{)",
+      "beginCaptures": {
+        "1": { "name": "keyword.control.temperature.gram" },
+        "2": { "name": "variable.other.temperature.gram" },
+        "3": { "name": "punctuation.section.embedded.begin.gram" }
+      },
+      "end": "(\\})",
+      "endCaptures": {
+        "1": { "name": "punctuation.section.embedded.end.gram" }
+      },
+      "patterns": [ { "include": "#quantity-content" } ]
+    },
+    "references": {
+      "name": "meta.reference.usage.gram",
+      "begin": "(&)([\\w\\s]+)(\\{)",
+      "beginCaptures": {
+        "1": { "name": "keyword.control.reference.gram" },
+        "2": { "name": "variable.other.reference.gram" },
+        "3": { "name": "punctuation.section.embedded.begin.gram" }
+      },
+      "end": "(\\})",
+      "endCaptures": {
+        "1": { "name": "punctuation.section.embedded.end.gram" }
+      },
+      "patterns": [ { "include": "#quantity-content" } ]
+    },
+    "composites": {
+      "patterns": [
+        {
+          "name": "meta.composite.gram",
+          "begin": "(<)\\s*(@)([\\w\\s]+)(\\{)",
+          "beginCaptures": {
+            "1": { "name": "keyword.operator.composite.gram" },
+            "2": { "name": "keyword.control.ingredient.gram" },
+            "3": { "name": "variable.parameter.ingredient.gram" },
+            "4": { "name": "punctuation.section.embedded.begin.gram" }
+          },
+          "end": "(\\})",
+          "endCaptures": {
+             "1": { "name": "punctuation.section.embedded.end.gram" }
+          },
+          "patterns": [ { "include": "#quantity-content" } ]
+        },
+        {
+          "match": "(<)\\s*(@)([\\w\\s]+)",
+          "captures": {
+            "1": { "name": "keyword.operator.composite.gram" },
+            "2": { "name": "keyword.control.ingredient.gram" },
+            "3": { "name": "variable.parameter.ingredient.gram" }
+          }
+        }
+      ]
+    },
+    "intermediate-decl": {
+         "match": "(->&)\\s*([\\w\\d]+)\\s*(\\{\\})",
+         "captures": {
+             "1": { "name": "keyword.operator.arrow.gram" },
+             "2": { "name": "variable.other.intermediate.gram" },
+             "3": { "name": "punctuation.section.embedded.gram" }
+         }
+    },
+    "quantity-content": {
+      "patterns": [
+        {
+           "match": "\\b\\d+(?:\\.\\d+)?(?:/\\d+(?:\\.\\d+)?)?\\b", 
+           "name": "constant.numeric.gram" 
+        },
+        {
+           "match": "(%)",
+           "name": "keyword.operator.percent.gram"
+        },
+        {
+           "match": "(@|&)([\\w\\s]+)",
+           "captures": {
+               "1": { "name": "keyword.control.reference.gram" },
+               "2": { "name": "variable.other.reference.gram" }
+           }
+        },
+        {
+           "match": "[^\\d%@&\\}]+", 
+           "name": "string.unquoted.unit.gram" 
+        }
+      ]
+    }
+  }
+}

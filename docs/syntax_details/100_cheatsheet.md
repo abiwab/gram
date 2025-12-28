@@ -1,0 +1,51 @@
+# GRAM Syntax Cheatsheet
+
+### 1. Basic Ingredients
+* **Simple**: `Add the @butter{}.`
+* **Quantity**: `Add @butter{100}.`
+* **Unit**: `Add @butter{100g}.`
+* **Compound Name**: `Add @sea salt{}.` (Braces always mandatory).
+* **Notes (Prep)**: `@onion{}(chopped)` or `@garlic{1}(crushed)`.
+
+### 2. Modifiers (Flags)
+Placed right after the `@`.
+* `@?` **Optional**: `@?sugar{}` (Displays "optional").
+* `@-` **Hidden**: `@-salt{}` (Does not show in shopping list, useful for "Salt, pepper").
+* `@*` **Baker's Base**: `@*flour{}` (100% reference for baker's math).
+* `@&` **Reference**: `@&butter{50g}` (Reuses previously listed butter, adds 50g to total).
+    *   *Safety*: Triggers error if `butter` was not defined before (typo check).
+    *   *Instruction*: `@&butter{}` (No qty) = "Use the prepared butter" (Does NOT add to shopping list).
+
+### 3. Advanced Management
+* **Aliases** (Rename): `@white wine[wine]{}` -> Displays "wine", lists "white wine".
+* **Alternatives** (Choice): `@milk{}|@water{}` or `#pan{}|#wok{}`.
+* **Composites** (Sub-parts):
+    * Source: `Zest the @lemon{} to get @zest{1}<@lemon{}.`
+    * Rule: `Total = @lemon + Max(@zest, @juice...)`. (Do not put quantity on parent source to avoid duplicates).
+* **Relative Quantities**: `Add @water{60% @flour}` (Calculates 60% of the sum of previous flours in the section).
+
+### 4. Recipe Structure
+* **Sections**: `## Section Title`
+* **Steps**: Paragraphs separated by an empty line.
+* **Action**: `[Verb]` at start of step (ex: `[Mix]...`).
+* **Comments**: `// comment` (end of line) or `/* block */`.
+
+### 5. Other Elements
+* **Cookware**: `#bowl{}` (Fixed), `#ramekins{4}` (Scalable), `#pan{=1}` (Forced Fixed).
+    * *Dimensions/Material*: ALWAYS in `()` AFTER. `#mold{}(20cm)` (NOT `#mold{20cm}`).
+* **Timers**: `~{20min}` (Unit mandatory: min, h, d, s).
+* **Temperatures**: `!{180°C}` (Unit mandatory: °C, °F).
+* **Intermediate Preparations**:
+    * *Definition*: At end of paragraph `->&dough{}` or title `## Title ->&dough{}`.
+    * *Usage*: `Let the &dough{} rest.` or `Use &dough{100g}.` (No `@`, not in shopping list).
+* **Retro-planning**:
+    * *Definition*: At end of title only `## Title {T-2d}`.
+    * *Usage*: Supports only `d` (days), `h` (hours) or `m` / `min` (minutes).
+---
+
+**"Crash Test" Tip:**
+* `@butter{}` -> Ingredient.
+* `#bowl{}(large)` -> Cookware (Dimension in parens).
+* `~{10min}` -> Timer (Always with unit).
+* `!{200°C}` -> Temperature.
+* `&dough{}` -> Intermediate Result.
