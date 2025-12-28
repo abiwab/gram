@@ -105,7 +105,7 @@ console.log(result.shopping_list);
 
 GRAM stands on the shoulders of giants.
 * **[Cooklang](https://cooklang.org)**: For pioneering the concept of a recipe markup language. GRAM was heavily inspired by their concise syntax.
-* **Ohm.js**: For making parsing accessible and robust.
+* **[Ohm.js](https://ohmjs.org)**: For making parsing accessible and robust.
 
 ## License
 
