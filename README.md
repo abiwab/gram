@@ -12,6 +12,9 @@ GRAM is designed to write structured, machine-readable recipes without sacrifici
 > **🚧 Project Status: Active Development**
 > GRAM is currently in an **Alpha stage**. The syntax specification is stabilizing, but the parser logic is actively being refined. Breaking changes may occur.
 > **This is an Open Source project.** We believe standardizing recipe data requires a community effort. Feedback, feature requests, and code contributions are highly welcome!
+
+Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for more information on how to contribute to GRAM.
+
 ---
 
 ## 📚 Documentation
