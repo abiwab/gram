@@ -26,7 +26,9 @@ The full technical documentation is available in the `docs/` folder.
 
 ## 🥘 Why GRAM?
 
-Unlike standard Markdown or loose formats, GRAM captures the **logic** of cooking:
+Inspired by the excellent [Cooklang](https://cooklang.org), GRAM evolves the concept by enforcing a **strict schema** and advanced logic capabilities.
+
+While Cooklang focuses on natural language fluidity, GRAM prioritizes **data integrity** and **computational logic**:
 
 1.  **Data vs. Narrative:** Clear separation between ingredients (`@flour{200g}`) and instructions.
 2.  **Mise en Place:** Distinguishes between the **Shopping List** (Aggregated totals) and the **Section List** (What you need on the table right now).
@@ -98,6 +100,12 @@ const result = parse(myGramString);
 
 console.log(result.shopping_list);
 ```
+
+## 👏 Acknowledgments
+
+GRAM stands on the shoulders of giants.
+* **[Cooklang](https://cooklang.org)**: For pioneering the concept of a recipe markup language. GRAM was heavily inspired by their concise syntax.
+* **Ohm.js**: For making parsing accessible and robust.
 
 ## License
 
