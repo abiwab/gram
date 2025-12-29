@@ -54,9 +54,9 @@ While Cooklang focuses on natural language fluidity, GRAM prioritizes **data int
 
 [Add] The @&dough{} to a #bowl{}.
 
-[Rest] for ~{30min}.
+[Rest] For ~{30min}.
 
-[Bake] In the #oven at !dough{200°C}.
+[Bake] In the #oven{} at !{200°C}.
 ```
 
 ---
