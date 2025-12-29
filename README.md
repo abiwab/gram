@@ -5,6 +5,8 @@
 ![Open Source](https://img.shields.io/badge/Open%20Source-Yes-brightgreen?style=flat-square)
 ![License](https://img.shields.io/badge/License-GPL_v3-blue.svg?style=flat-square)
 
+![Gram Banner](gram-banner.png "Gram")
+
 GRAM is designed to write structured, machine-readable recipes without sacrificing readability. It treats recipes as **code**, compiling ingredients, instructions, and cookware into a strict AST (Abstract Syntax Tree) for precise analysis, scaling, and shopping list generation.
 
 [**👉 Try the Online Playground**](https://abiwab.github.io/gram/playground/) *(or run it locally)*
@@ -46,15 +48,15 @@ While Cooklang focuses on natural language fluidity, GRAM prioritizes **data int
 ## ⚡ Quick Syntax
 
 ```gram
-## Dough {T-2h} ->&dough{}
+## Dough {T-2h} 
 
-[Mix] The @flour{200g} and @water{100ml}.
+[Mix] The @flour{200g} and @water{100ml}. ->&dough{}
 
 [Add] The @&dough{} to a #bowl{}.
 
 [Rest] for ~{30min}.
 
-[Bake] In the #oven at !oven{200°C}.
+[Bake] In the #oven at !dough{200°C}.
 ```
 
 ---
