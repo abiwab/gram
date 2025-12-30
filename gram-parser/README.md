@@ -32,11 +32,23 @@ try {
 }
 ```
 
+## Building
+
+To build the project from source (TypeScript):
+
+```bash
+npm install
+npm run build
+```
+
+This will generate the compiled JavaScript in the `dist/` directory.
+
 ## Structure
 
-*   `src/index.js`: Entry point, orchestrates Parsing -> AST.
-*   `src/compiler.js`: Handles AST -> Schema JSON transformation.
+*   `src/index.ts`: Entry point, orchestrates Parsing -> AST.
+*   `src/compiler/`: Contains the logic for AST -> Schema JSON transformation.
 *   `grammar.ohm`: The OhmJS grammar definition.
+*   `dist/`: Compiled JavaScript output (generated).
 
 ## Output Model
 

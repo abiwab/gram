@@ -33,8 +33,17 @@ This is the official browser-based playground for **GRAM Language**, allowing yo
 
 The project source code is located in `src/`. The build process bundles the parser, application logic, and CSS into the `dist/` directory.
 
-To rebuild the project after making changes to `src/app.js` or `src/style.css`:
+**Prerequisite**: The parser must be built first.
+```bash
+cd ../gram-parser
+npm install
+npm run build
+cd ../playground
+```
+
+To rebuild the playground project after making changes to `src/app.js` or `src/style.css`:
 
 ```bash
-node build.js
+npm install
+npm run build
 ```
