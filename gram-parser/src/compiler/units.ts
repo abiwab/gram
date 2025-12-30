@@ -1,9 +1,19 @@
-const UNIT_CONVERSIONS = {
+export interface UnitMap {
+    base: string;
+    map: Record<string, number>;
+}
+
+export const UNIT_CONVERSIONS: Record<string, UnitMap> = {
     mass: { base: 'g', map: { kg: 1000, mg: 0.001, g: 1 } },
     volume: { base: 'ml', map: { l: 1000, liter: 1000, litre: 1000, dl: 100, cl: 10, ml: 1 } }
 };
 
-const normalizeUnit = (quantityObj, unit) => {
+export interface NormalizedUnit {
+    quantity: number | any;
+    unit: string | null;
+}
+
+export const normalizeUnit = (quantityObj: any, unit?: string | null): NormalizedUnit => {
     if (!quantityObj) return { quantity: 0, unit: unit || null };
     
     const u = (unit || '').toLowerCase().trim();
@@ -24,7 +34,12 @@ const normalizeUnit = (quantityObj, unit) => {
     return { quantity: val, unit: u };
 };
 
-const getMass = (qty, unit) => {
+export interface MassResult {
+    mass: number;
+    valid: boolean;
+}
+
+export const getMass = (qty: any, unit?: string | null): MassResult => {
     let val = qty;
     
     // Resolve object if needed
@@ -41,10 +56,4 @@ const getMass = (qty, unit) => {
     if (UNIT_CONVERSIONS.mass.map[u]) return { mass: val * UNIT_CONVERSIONS.mass.map[u], valid: true };
     if (UNIT_CONVERSIONS.volume.map[u]) return { mass: val * UNIT_CONVERSIONS.volume.map[u], valid: true }; // 1ml = 1g approximate
     return { mass: 0, valid: false };
-};
-
-module.exports = {
-    UNIT_CONVERSIONS,
-    normalizeUnit,
-    getMass
 };

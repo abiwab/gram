@@ -1,5 +1,6 @@
+import { QuantityAST, RelativeQuantityAST, Usage, QuantityValueAST, TextQuantityAST } from '../types';
 
-const slugify = (text) => {
+export const slugify = (text: string | number): string => {
     return text
         .toString()
         .toLowerCase()
@@ -10,47 +11,60 @@ const slugify = (text) => {
         || 'unknown';
 };
 
-const minifyQuantity = (q) => {
+export const minifyQuantity = (q: any): number | QuantityValueAST | undefined => {
     if (!q) return undefined;
     if (typeof q === 'number') return q;
+    
+    // Check for specific AST types or general structures
     if (q.type === 'single' && q.value !== undefined) return q.value;
     if (q.type === 'range' || q.type === 'fraction') return q;
+    
+    // If it's a full QuantityAST
     if (q.type === 'Quantity') {
         if (q.value && q.value.type === 'single') return q.value.value;
         return q.value; 
     }
+    
+    // Explicitly ignore RelativeQuantity for minification in this context
     if (q.type === 'RelativeQuantity') return undefined; 
+    
     return q;
 };
 
-const createCleanUsage = (item, id) => {
-    const obj = { id };
+export const createCleanUsage = (item: any, id: string): Usage => {
+    const obj: Usage = { id };
     const qtyNode = item.quantity;
-    let cleanQty = undefined;
+    let cleanQty: any = undefined;
     
     if (qtyNode) {
-        cleanQty = minifyQuantity(qtyNode.value);
+        // If it's a TextQuantity, we use the value directly
+        if (qtyNode.type === 'TextQuantity') {
+             cleanQty = qtyNode.value;
+        } else {
+             cleanQty = minifyQuantity(qtyNode.value || qtyNode);
+        }
     }
     
     if (cleanQty !== undefined) obj.qty = cleanQty;
     if (qtyNode && qtyNode.unit) obj.unit = qtyNode.unit;
 
     if (item.modifiers && item.modifiers.length > 0) {
-        const MODIFIER_MAP = {
+        const MODIFIER_MAP: Record<string, string> = {
             '?': 'optional',
             '-': 'hidden',
             '&': 'reference',
             '*': 'bakers_percentage'
         };
-        obj.modifiers = item.modifiers.map(m => MODIFIER_MAP[m] || m);
+        obj.modifiers = item.modifiers.map((m: string) => MODIFIER_MAP[m] || m);
     }
 
-    if (item.type === 'cookware') {
+    if (item.type === 'Cookware') {
         if (qtyNode && qtyNode.fixed === false) obj.fixed = false;
     } else {
         if (qtyNode && qtyNode.fixed === true) obj.fixed = true;
     }
     
+    // Special handling for TextQuantity override
     if (qtyNode && qtyNode.type === 'TextQuantity') {
         obj.qty = qtyNode.value;
         obj.fixed = true; 
@@ -58,8 +72,9 @@ const createCleanUsage = (item, id) => {
 
     if (item.alias) obj.alias = item.alias;
     if (item.preparation) obj.preparation = item.preparation;
+    
     if (item.composite) {
-         const comp = {};
+         const comp: any = {};
          if (item.composite.parent) comp.parent = item.composite.parent;
          if (item.composite.quantity) {
              const compQty = item.composite.quantity;
@@ -73,14 +88,14 @@ const createCleanUsage = (item, id) => {
     return obj;
 };
 
-const cleanObject = (obj) => {
+export const cleanObject = (obj: any): any => {
     if (obj === null || obj === undefined) return undefined;
     if (Array.isArray(obj)) {
         const cleanedArr = obj.map(cleanObject).filter(x => x !== undefined && x !== null);
         return cleanedArr;
     }
     if (typeof obj === 'object') {
-        const res = {};
+        const res: any = {};
         for (const key in obj) {
             const val = obj[key];
             const cleanedVal = cleanObject(val);
@@ -92,11 +107,4 @@ const cleanObject = (obj) => {
         return res;
     }
     return obj;
-};
-
-module.exports = {
-    slugify,
-    minifyQuantity,
-    createCleanUsage,
-    cleanObject
 };

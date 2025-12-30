@@ -1,9 +1,19 @@
 
-const { getMass } = require('./units');
-const { slugify, minifyQuantity, createCleanUsage, cleanObject } = require('./utils');
-const { generateShoppingList } = require('./shopping');
+import { getMass } from './units';
+import { slugify, minifyQuantity, createCleanUsage, cleanObject } from './utils';
+import { generateShoppingList } from './shopping';
+import { 
+    RecipeAST, SectionAST, IngredientAST, 
+    Context, Registry, ProcessedSection, StepAST, CommentAST, 
+    CompilationResult, Usage 
+} from '../types';
 
-function processBlockItem(item, ctx, registry, secIngredients, secCookware) {
+// Helper type helper since we don't have all exact AST names matching from Ohm semantics yet
+// We'll trust the structure matches types.ts
+
+export function processBlockItem(item: any, ctx: Context, registry: Registry, secIngredients: Usage[], secCookware: Usage[]): Usage | null | string {
+    if (!item) return null;
+
     if (item.type === 'Ingredient') {
         const id = slugify(item.name);
         
@@ -14,18 +24,19 @@ function processBlockItem(item, ctx, registry, secIngredients, secCookware) {
         }
         
         const entry = registry.ingredients.get(id);
-        if (item.quantity && item.quantity.unit && !entry.default_unit) {
+        if (entry && item.quantity && item.quantity.unit && !entry.default_unit) {
             entry.default_unit = item.quantity.unit;
         }
 
         if (item.composite) {
-            entry.is_composite = true;
+            if (entry) entry.is_composite = true;
             const parentId = slugify(item.composite.parent);
-            entry.parent = parentId;
+            if (entry) entry.parent = parentId;
             if (!registry.ingredients.has(parentId)) {
                  registry.ingredients.set(parentId, { id: parentId, name: item.composite.parent, is_composite: true });
             } else {
-                 registry.ingredients.get(parentId).is_composite = true;
+                 const parent = registry.ingredients.get(parentId);
+                 if (parent) parent.is_composite = true;
             }
         }
 
@@ -37,7 +48,7 @@ function processBlockItem(item, ctx, registry, secIngredients, secCookware) {
              const percent = rel.percent;
              
              let totalQty = 0;
-             let inheritedUnit = null;
+             let inheritedUnit: string | null = null;
              let isGhost = false;
              
              const markerChar = rel.referenceType === 'variable' ? '&' : '@';
@@ -47,8 +58,10 @@ function processBlockItem(item, ctx, registry, secIngredients, secCookware) {
              if (rel.referenceType === 'variable') {
                  if (ctx.variableWeights.has(targetId)) {
                      const varData = ctx.variableWeights.get(targetId);
-                     totalQty = varData.mass;
-                     inheritedUnit = 'g'; 
+                     if (varData) {
+                        totalQty = varData.mass;
+                        inheritedUnit = 'g'; 
+                     }
                  } else {
                      // Ghost Variable
                      isGhost = true;
@@ -149,12 +162,16 @@ function processBlockItem(item, ctx, registry, secIngredients, secCookware) {
     }
 
     if (item.type === 'Alternative') {
-        const options = item.options.map(opt => processBlockItem(opt, ctx, registry, [], []));
-        const usage = { type: 'alternative', options };
-        if (item.options[0].type === 'Ingredient') {
-             secIngredients.push(usage);
-        } else if (item.options[0].type === 'Cookware') {
-             secCookware.push(usage);
+        const options = item.options.map((opt: any) => processBlockItem(opt, ctx, registry, [], []));
+        const usage: Usage = { id: 'alternative', type: 'alternative', options };
+        // We need to infer where to push based on first option, BUT processBlockItem returns Usage.
+        // Let's look at the AST type to decide
+        if (item.options.length > 0) {
+             if (item.options[0].type === 'Ingredient') {
+                 secIngredients.push(usage);
+             } else if (item.options[0].type === 'Cookware') {
+                 secCookware.push(usage);
+             }
         }
         return usage;
     }
@@ -165,7 +182,7 @@ function processBlockItem(item, ctx, registry, secIngredients, secCookware) {
              ctx.warnings.push({ code: 'UNDEFINED_REFERENCE', message: `Reference to undefined ingredient '&${item.name}'.`, item: item.name });
         }
         if (ctx.definedIntermediates.has(item.name)) ctx.usedIntermediates.add(item.name);
-        const obj = { type: 'reference', id };
+        const obj: any = { type: 'reference', id };
         if (item.quantity) {
              const cleanQty = minifyQuantity(item.quantity);
              if (cleanQty !== undefined) obj.qty = cleanQty;
@@ -181,7 +198,8 @@ function processBlockItem(item, ctx, registry, secIngredients, secCookware) {
         if (!registry.ingredients.has(id)) {
             registry.ingredients.set(id, { id, name: item.name, is_intermediate: true });
         } else {
-            registry.ingredients.get(id).is_intermediate = true;
+            const entry = registry.ingredients.get(id);
+            if (entry) entry.is_intermediate = true;
         }
         return null; // Don't return as step content
     }
@@ -190,7 +208,7 @@ function processBlockItem(item, ctx, registry, secIngredients, secCookware) {
     
     // Timer/Temperature logic
     if (item.type === 'Timer' || item.type === 'Temperature') {
-        const obj = { type: item.type.toLowerCase() };
+        const obj: any = { type: item.type.toLowerCase() };
         if (item.name) obj.name = item.name;
         if (item.quantity) {
              const q = item.quantity;
@@ -198,12 +216,13 @@ function processBlockItem(item, ctx, registry, secIngredients, secCookware) {
              let unit = q.unit;
              if (item.type === 'Timer' && (unit === 'm' || unit === 'minutes')) unit = 'min';
              if (unit) obj.unit = unit;
+             
              if (q.type === 'TextQuantity') {
-                 ctx.warnings.push({ code: 'INVALID_UNIT', message: `Invalid text content in ${item.type}.`, item: q.value });
-                 obj.quantity = { type: 'text', value: q.value }; 
+                 ctx.warnings.push({ code: 'INVALID_UNIT', message: `Invalid text content in ${item.type}.`, item: (q as any).value });
+                 obj.quantity = { type: 'text', value: (q as any).value }; 
              } else {
                  if (!unit) {
-                     ctx.warnings.push({ code: 'MISSING_UNIT', message: `${item.type} must have an explicit unit.`, item: item.name });
+                     ctx.warnings.push({ code: 'MISSING_UNIT', message: `${item.type} must have an explicit unit.`, item: item.name || item.type });
                  }
              }
         }
@@ -211,14 +230,14 @@ function processBlockItem(item, ctx, registry, secIngredients, secCookware) {
     }
 
     if (item.type === 'Comment') {
-        return { type: 'comment', value: item.value, kind: item.kind };
+        return { type: 'comment', value: item.value, kind: item.kind } as any;
     }
 
     return item;
 }
 
-function processSections(astChildren, registry) {
-    const ctx = {
+function processSections(astChildren: any[], registry: Registry): ProcessedSection[] {
+    const ctx: Context = {
         warnings: registry.warnings,
         intermediateDecl: null,
         seenNames: new Set(),
@@ -228,9 +247,10 @@ function processSections(astChildren, registry) {
         globalScopes: new Map() // Check Scope Conflicts
     };
 
-    const sections = [];
+    const sections: ProcessedSection[] = [];
     let blocksToProcess = astChildren;
     
+    // Normalize: ensure strict Sections
     if (blocksToProcess.length > 0 && blocksToProcess[0].type !== 'Section') {
         blocksToProcess = [{ type: 'Section', title: null, children: astChildren }];
     }
@@ -258,39 +278,46 @@ function processSections(astChildren, registry) {
             ctx.definedIntermediates.add(varName);
         }
 
-        const sectionIngredients = [];
-        const sectionCookware = [];
-        const steps = [];
+        const sectionIngredients: Usage[] = [];
+        const sectionCookware: Usage[] = [];
+        const steps: any[] = [];
 
-        section.children.forEach(block => {
+        section.children.forEach((block: any) => {
              if (block.type === 'Step') {
-                 const stepObj = { type: 'step', content: [] };
+                 const stepObj: any = { type: 'step', content: [] };
                  if (block.action) stepObj.action = block.action;
                  
                  ctx.intermediateDecl = null;
                  
-                 block.children.forEach(item => {
+                 block.children.forEach((item: any) => {
                      const processed = processBlockItem(item, ctx, registry, sectionIngredients, sectionCookware);
                      if (processed) {
                           stepObj.content.push(processed);
                           
                           let mass = 0;
                           let valid = false;
-                          if (processed.qty && typeof processed.qty === 'number') {
-                              const m = getMass(processed.qty, processed.unit);
-                              mass = m.mass;
-                              valid = m.valid;
-                          } else if (processed.type === 'reference' && processed.formula && processed.qty) {
-                               mass = processed.qty; 
-                               valid = true;
-                          }
                           
-                          if (processed.type === 'reference' && !processed.qty) {
-                              if (ctx.variableWeights.has(processed.id)) {
-                                  const vData = ctx.variableWeights.get(processed.id);
-                                  mass = vData.mass;
-                                  valid = !vData.isPartial;
-                              }
+                          // Type guard or rough check
+                          if (typeof processed !== 'string') {
+                              const p = processed as Usage;
+                                if (p.qty && typeof p.qty === 'number') {
+                                    const m = getMass(p.qty, p.unit);
+                                    mass = m.mass;
+                                    valid = m.valid;
+                                } else if (p.type === 'reference' && p.formula && p.qty) {
+                                    mass = p.qty as number; 
+                                    valid = true;
+                                }
+                                
+                                if (p.type === 'reference' && !p.qty) {
+                                    if (ctx.variableWeights.has(p.id)) {
+                                        const vData = ctx.variableWeights.get(p.id);
+                                        if (vData) {
+                                            mass = vData.mass;
+                                            valid = !vData.isPartial;
+                                        }
+                                    }
+                                }
                           }
                           
                           stepObj._accumulatedMass = (stepObj._accumulatedMass || 0) + mass;
@@ -313,7 +340,7 @@ function processSections(astChildren, registry) {
              }
         });
 
-        const res = { 
+        const res: ProcessedSection = { 
             title: section.title, 
             ingredients: sectionIngredients, 
             cookware: sectionCookware, 
@@ -340,10 +367,10 @@ function processSections(astChildren, registry) {
     return sections;
 }
 
-function compile(ast) {
+export function compile(ast: RecipeAST): CompilationResult {
     if (ast.type !== 'Recipe') throw new Error("Compiler expects Recipe AST");
 
-    const registry = {
+    const registry: Registry = {
         ingredients: new Map(),
         cookware: new Map(),
         warnings: []
@@ -352,7 +379,7 @@ function compile(ast) {
     const sections = processSections(ast.children, registry);
     const shopping_list = generateShoppingList(sections, registry);
     
-    const globalCookware = [];
+    const globalCookware: Usage[] = [];
     sections.forEach(sec => {
         sec.cookware.forEach(cw => {
              if (!cw.modifiers || !cw.modifiers.includes('reference')) {
@@ -361,9 +388,9 @@ function compile(ast) {
         });
     });
 
-    const result = {
-        title: ast.meta.title || null,
-        slug: ast.meta.title ? slugify(ast.meta.title) : null,
+    const result: CompilationResult = {
+        title: (ast.meta as any).title || null,
+        slug: (ast.meta as any).title ? slugify((ast.meta as any).title) : null,
         meta: ast.meta,
         registry: {
             ingredients: Object.fromEntries(registry.ingredients),
@@ -377,5 +404,3 @@ function compile(ast) {
 
     return cleanObject(result);
 }
-
-module.exports = { compile };
