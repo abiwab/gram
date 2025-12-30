@@ -42,7 +42,7 @@ Move the narrative, history, or scientific explanation to comments.
 
 ```gram
 // Bad: Mixture of data and anecdotes
-[Cook] The @steak over high heat. My grandmother always said wait for the pan to smoke, that's the secret to a beautiful crust.
+[Cook] The @steak{} over high heat. My grandmother always said wait for the pan to smoke, that's the secret to a beautiful crust.
 
 // Good: Clear separation
 [Sear] The @steak{} over high heat (smoking pan).
@@ -51,7 +51,7 @@ Move the narrative, history, or scientific explanation to comments.
 
 ### Rule #3: Chain your Preparations
 
-Use intermediate variables (`-> &name`) to create a logical thread. This lets the system know that the bowl contains *both* the flour and the sugar.
+Use intermediate variables (`->&name`) to create a logical thread. This lets the system know that the bowl contains *both* the flour and the sugar.
 
 ```gram
 [Mix] @flour{} + @sugar{}. ->&dry_mix{}
@@ -66,7 +66,7 @@ Don't repeat yourself. If you use an ingredient a second time, use the **Referen
 *   **Declaration** (`@sugar`): "I am introducing a new ingredient."
 *   **Reference** (`@&sugar`): "I am talking about the sugar I mentioned before."
 
-This protects you against typos (`@&suggar` will trigger an error) and keeps the shopping list clean (using `@&sugar{}` without quantity triggers specific instruction logic without polluting the list).
+This protects you against typos (`@&suggar{}` will trigger an error) and keeps the shopping list clean (using `@&sugar{}` without quantity triggers specific instruction logic without polluting the list).
 
 ## 3. Before / After Comparison
 

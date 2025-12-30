@@ -60,7 +60,7 @@ Steps can optionally start with an **Action** enclosed in brackets. This highlig
 ```gram
 [Mix] The @flour{} and @water{}.
 
-[Bake] In the #oven for ~{30%minutes}.
+[Bake] In the #oven for ~{30min}.
 ```
 
 ### Sections
@@ -118,13 +118,13 @@ You can add comments up to the end of the line to gram text with `//`.
 ```gram
 // Don't burn the roux!
 
-Mash @potato{2%kg} until smooth // alternatively, boil 'em first, then mash 'em, then stick 'em in a stew.
+Mash @potato{2kg} until smooth // alternatively, boil 'em first, then mash 'em, then stick 'em in a stew.
 ```
 
 Or block comments with `/* comment text */`.
 
 ```gram
-Slowly add @milk{4%cup} /* TODO change units to litres */, keep mixing
+Slowly add @milk{4 cup} /* TODO change units to litres */, keep mixing
 ```
 
 ### Cookware
