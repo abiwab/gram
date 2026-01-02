@@ -87,13 +87,17 @@ Whether you are a developer, a chef, or a data enthusiast, your contributions ar
 ## 📦 Try it out
 
 ### 1. Run the Playground locally
-
-To inspect the parser or test your recipes in the web-based playground IDE :
+To inspect the parser or test your recipes in the web-based playground IDE:
 
 ```bash
-cd playground
+# Install dependencies for all packages
 npm install
-npx serve
+
+# Build parser, compiler, and playground
+npm run build 
+
+# Run the playground
+npm run dev
 ```
 
 ### 2. Use the Parser

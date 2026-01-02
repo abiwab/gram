@@ -14,7 +14,8 @@
   },
   "homepage": "https://github.com/abiwab/gram/tree/main/playground#readme",
   "scripts": {
-    "build": "node build.js"
+    "build": "echo '🔨 Bundling...' && node build.js && echo '✨ Done!'",
+    "start": "echo '🔨 Bundling...' && node build.js && echo '🌐 Serving at http://localhost:3000' && npx serve"
   },
   "dependencies": {
     "ohm-js": "^17.2.1"
