@@ -1,4 +1,4 @@
-import { ProcessedSection } from '../types';
+import { ProcessedSection } from 'gram-parser';
 
 export function detectCycles(sections: ProcessedSection[]): Set<string> {
      const graph = new Map<string, Set<string>>(); // id -> [dependencies]

@@ -1,4 +1,4 @@
-import { QuantityAST, RelativeQuantityAST, Usage, QuantityValueAST, TextQuantityAST } from '../types';
+import { QuantityAST, RelativeQuantityAST, Usage, QuantityValueAST, TextQuantityAST } from 'gram-parser';
 
 export const slugify = (text: string | number): string => {
     return text

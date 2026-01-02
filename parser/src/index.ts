@@ -1,13 +1,14 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as ohm from 'ohm-js';
-import { compile } from './compiler/index';
 import { 
     RecipeAST, SectionAST, StepAST, IngredientAST, CookwareAST, 
     QuantityAST, QuantityValueAST, RelativeQuantityAST, TextQuantityAST, 
     ReferenceAST, TimerAST, TemperatureAST, CommentAST, AlternativeAST, 
     IntermediateDecl 
 } from './types';
+
+export * from './types';
 
 // Load Grammar
 const grammarPath = path.join(__dirname, '../grammar.ohm');
@@ -337,7 +338,4 @@ export function getAST(input: string): RecipeAST {
     return semantics(match).toAST();
 }
 
-export function parse(input: string) {
-    const ast = getAST(input);
-    return compile(ast);
-}
+// export function parse removed. Use getAST() and then compileFromAST() from gram-compiler.

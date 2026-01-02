@@ -32,13 +32,15 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getAST = getAST;
-exports.parse = parse;
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
 const ohm = __importStar(require("ohm-js"));
-const index_1 = require("./compiler/index");
+__exportStar(require("./types"), exports);
 // Load Grammar
 const grammarPath = path.join(__dirname, '../grammar.ohm');
 const grammarContent = fs.readFileSync(grammarPath, 'utf-8');
@@ -309,7 +311,4 @@ function getAST(input) {
     }
     return semantics(match).toAST();
 }
-function parse(input) {
-    const ast = getAST(input);
-    return (0, index_1.compile)(ast);
-}
+// export function parse removed. Use getAST() and then compileFromAST() from gram-compiler.

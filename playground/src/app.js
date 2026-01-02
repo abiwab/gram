@@ -1,4 +1,5 @@
-import { parse } from './generated-parser.js';
+import { getAST } from 'gram-parser';
+import { compile } from 'gram-compiler';
 
 const input = document.getElementById('input');
 const output = document.getElementById('output');
@@ -328,7 +329,8 @@ function formatCookware(item, registry) {
 function update() {
     const text = input.value;
     try {
-        const result = parse(text);
+        const ast = getAST(text);
+        const result = compile(ast);
         
         // Prepare content
         let content = '';

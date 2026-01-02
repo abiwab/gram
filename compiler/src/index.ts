@@ -6,7 +6,7 @@ import {
     RecipeAST, SectionAST, IngredientAST, 
     Context, Registry, ProcessedSection, StepAST, CommentAST, 
     CompilationResult, Usage 
-} from '../types';
+} from 'gram-parser';
 
 // Helper type helper since we don't have all exact AST names matching from Ohm semantics yet
 // We'll trust the structure matches types.ts

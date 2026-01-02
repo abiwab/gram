@@ -65,7 +65,8 @@ While Cooklang focuses on natural language fluidity, GRAM prioritizes **data int
 
 This monorepo contains:
 
-*   **`gram-parser/`**: The core logic. Validates parsing, builds the AST, and compiles the Shopping List.
+*   **`parser/`**: The core parser. Converts GRAM strings to an AST (Abstract Syntax Tree).
+*   **`compiler/`**: The compiler logic. Transforms the AST into the final Shopping List and Instructions JSON.
 *   **`playground/`**: A web-based IDE to write GRAM and visualize the output (JSON, Markdown, Preview).
 *   **`docs/`**: Comprehensive documentation.
 
@@ -97,11 +98,14 @@ npx serve
 
 ### 2. Use the Parser
 
-*(See `gram-parser/README.md` for API details)*
+*(See `parser/README.md` for API details)*
 
 ```javascript
-const { parse } = require('gram-parser');
-const result = parse(myGramString);
+const { getAST } = require('gram-parser');
+const { compile } = require('gram-compiler');
+
+const ast = getAST(myGramString);
+const result = compile(ast);
 
 console.log(result.shopping_list);
 ```

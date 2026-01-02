@@ -1,7 +1,7 @@
 import { slugify, minifyQuantity } from './utils';
 import { getMass } from './units';
 import { detectCycles } from './graph';
-import { ProcessedSection, Registry, Usage, QuantityValueAST } from '../types';
+import { ProcessedSection, Registry, Usage, QuantityValueAST } from 'gram-parser';
 
 interface ShoppingListItem {
     id: string;
