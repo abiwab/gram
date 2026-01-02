@@ -3,16 +3,13 @@
   "private": true,
   "license": "GPL-3.0",
   "workspaces": [
-    "parser",
-    "compiler",
-    "playground",
-    "vscode-extension"
+    "packages/*"
   ],
   "scripts": {
     "postinstall": "npm run build",
-    "build": "echo '🏗️ Building Parser & Compiler...' && npm run build -w parser -s && npm run build -w compiler -s && echo '✅ Core build complete.'",
-    "build:playground": "echo '🎨 Building Playground...' && npm run build -w playground -s && echo '✅ Playground build complete.'",
-    "dev": "echo '🚀 Starting Playground...' && npm start -w playground -s",
+    "build": "echo '🏗️ Building Parser & Compiler...' && npm run build -w gram-parser -s && npm run build -w gram-compiler -s && echo '✅ Core build complete.'",
+    "build:playground": "echo '🎨 Building Playground...' && npm run build -w gram-playground -s && echo '✅ Playground build complete.'",
+    "dev": "echo '🚀 Starting Playground...' && npm start -w gram-playground -s",
     "test": "echo \"Error: no test specified\" && exit 1"
   }
 }
