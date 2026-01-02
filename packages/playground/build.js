@@ -45,6 +45,46 @@ esbuild.build({
 }).then(() => {
     console.log('Build successful!');
     fs.unlinkSync(shimmedParserPath);
+
+    // Copy examples to dist
+    // Copy examples to dist and generate manifest
+    const examplesSrc = path.join(__dirname, '../../examples');
+    const examplesDest = path.join(__dirname, 'dist/examples');
+    if (!fs.existsSync(examplesDest)) {
+        fs.mkdirSync(examplesDest, { recursive: true });
+    }
+
+    const manifest = [];
+
+    fs.readdirSync(examplesSrc).forEach(file => {
+        if (!file.endsWith('.gram')) return;
+
+        const srcPath = path.join(examplesSrc, file);
+        const destPath = path.join(examplesDest, file);
+        fs.copyFileSync(srcPath, destPath);
+
+        // Read title from file content
+        const content = fs.readFileSync(srcPath, 'utf-8');
+        
+        // Try YAML Frontmatter Title
+        const yamlMatch = content.match(/^title:\s*['"]?(.+?)['"]?\s*$/m);
+        
+        // Try Markdown h2 Title
+        const h2Match = content.match(/^##\s+(.+)$/m);
+        
+        const title = yamlMatch ? yamlMatch[1].trim() : (h2Match ? h2Match[1].trim() : file.replace('.gram', ''));
+        
+        manifest.push({
+            id: file,
+            title: title,
+            path: `dist/examples/${file}`
+        });
+    });
+
+    // Write manifest
+    fs.writeFileSync(path.join(examplesDest, 'manifest.json'), JSON.stringify(manifest, null, 2));
+
+    console.log('Examples copied to dist/ and manifest.json generated.');
 }).catch((e) => {
     console.error(e);
     process.exit(1);

@@ -1,0 +1,17 @@
+[
+  {
+    "id": "pancakes.gram",
+    "title": "Pancakes",
+    "path": "dist/examples/pancakes.gram"
+  },
+  {
+    "id": "spaghetti.gram",
+    "title": "Spaghetti Bolognese",
+    "path": "dist/examples/spaghetti.gram"
+  },
+  {
+    "id": "torture.gram",
+    "title": "The Ultimate GRAM Torture Test",
+    "path": "dist/examples/torture.gram"
+  }
+]

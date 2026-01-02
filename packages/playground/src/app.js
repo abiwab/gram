@@ -1044,31 +1044,53 @@ copyBtn.addEventListener('click', () => {
 // Examples Logic
 const examplesSelect = document.getElementById('examples-select');
 
-const EXAMPLES = {
-    pancakes: 'examples/pancakes.gram',
-    spaghetti: 'examples/spaghetti.gram',
-    torture: 'examples/torture.gram'
-};
-
+// Load Manifest and Populate Select
 if (examplesSelect) {
+    fetch('dist/examples/manifest.json')
+        .then(res => {
+            if (!res.ok) throw new Error('Could not load manifest');
+            return res.json();
+        })
+        .then(manifest => {
+            // Clear existing options (keep the placeholder)
+            if (examplesSelect.options.length > 1) {
+                // Remove all except first
+                while (examplesSelect.options.length > 1) {
+                    examplesSelect.remove(1);
+                }
+            }
+
+            // Populate
+            manifest.forEach(ex => {
+                const opt = document.createElement('option');
+                opt.value = ex.id; // We store ID, but we need path
+                opt.dataset.path = ex.path; // fix path for runtime
+                opt.textContent = ex.title;
+                examplesSelect.appendChild(opt);
+            });
+        })
+        .catch(e => console.error('Manifest Error:', e));
+
     examplesSelect.addEventListener('change', (e) => {
-        const key = e.target.value;
-        if (EXAMPLES[key]) {
-             fetch(EXAMPLES[key])
-                .then(res => {
-                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-                    return res.text();
-                })
-                .then(text => {
-                    input.value = text;
-                    handleInput();
-                })
-                .catch(e => {
-                    console.error('Could not load example:', e);
-                    alert('Error loading example file.');
-                });
-        }
-        // Reset selection so you can select the same one again if you modified it
-        e.target.value = ""; 
+        const option = e.target.selectedOptions[0];
+        if (!option || !option.dataset.path) return;
+
+        const path = option.dataset.path;
+        fetch(path)
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                return res.text();
+            })
+            .then(text => {
+                input.value = text;
+                handleInput();
+            })
+            .catch(err => {
+                console.error('Could not load example:', err);
+                alert('Error loading example file.');
+            });
+
+        // Reset selection
+        e.target.value = "";
     });
 }
