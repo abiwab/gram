@@ -12,7 +12,7 @@ GRAM is an open source project dedicated to treating recipes as code. Whether yo
 
 ## 🛠️ Project Structure
 
-Right now, GRAM is a **monorepo** containing four main packages:
+Right now, GRAM is a **monorepo** organized in a `packages/` directory containing four main packages:
 
 1.  **`parser/`**: The core parser. Contains the OhmJS grammar definition and converts string to AST.
 2.  **`compiler/`**: The logic layer. Processes the AST to generate shopping lists and JSON results.
