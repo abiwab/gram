@@ -17,6 +17,10 @@
     "url": "https://github.com/abiwab/gram.git",
     "directory": "compiler"
   },
+  "bugs": {
+    "url": "https://github.com/abiwab/gram/issues"
+  },
+  "homepage": "https://github.com/abiwab/gram/tree/main/compiler#readme",
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "npm run build"
