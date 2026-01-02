@@ -9,6 +9,7 @@ GRAM is an open source project dedicated to treating recipes as code. Whether yo
 *   💡 **Feature Requests & Syntax Proposals**
 *   📝 **Documentation Improvements**
 *   💻 **Code Contributions**
+*   🥘 **Recipe Examples**: Feel free to submit new `.gram` files to the `examples/` directory to help test the language!
 
 ## 🛠️ Project Structure
 
