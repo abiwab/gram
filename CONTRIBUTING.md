@@ -17,7 +17,7 @@ Right now, GRAM is a **monorepo** containing four main packages:
 1.  **`parser/`**: The core parser. Contains the OhmJS grammar definition and converts string to AST.
 2.  **`compiler/`**: The logic layer. Processes the AST to generate shopping lists and JSON results.
 3.  **`playground/`**: The web-based IDE (Vanilla JS + Esbuild).
-4.  **`gram-vscode-extension/`**: The Visual Studio Code extension for syntax highlighting.
+4.  **`vscode-extension/`**: The Visual Studio Code extension for syntax highlighting.
 
 ## 🤝 How to Contribute
 
