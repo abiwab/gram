@@ -12,11 +12,12 @@ GRAM is an open source project dedicated to treating recipes as code. Whether yo
 
 ## 🛠️ Project Structure
 
-Right now, GRAM is a **monorepo** containing three main packages:
+Right now, GRAM is a **monorepo** containing four main packages:
 
-1.  **`gram-parser/`**: The core logic. Contains the OhmJS grammar definition and the AST compiler.
-2.  **`playground/`**: The web-based IDE (Vanilla JS + Esbuild).
-3.  **`gram-vscode-extension/`**: The Visual Studio Code extension for syntax highlighting.
+1.  **`parser/`**: The core parser. Contains the OhmJS grammar definition and converts string to AST.
+2.  **`compiler/`**: The logic layer. Processes the AST to generate shopping lists and JSON results.
+3.  **`playground/`**: The web-based IDE (Vanilla JS + Esbuild).
+4.  **`gram-vscode-extension/`**: The Visual Studio Code extension for syntax highlighting.
 
 ## 🤝 How to Contribute
 
@@ -38,8 +39,8 @@ GRAM is a language specification. Changes to valid syntax are significant.
    ```
 2.  **Make your changes**.
 3.  **Test your changes**.
-   *   For the parser, run existing tests (if available) or add a new test case in raw GRAM files.
-   *   For the playground, verify it runs via `npx serve`.
+   *   For the parser/compiler, verify the build via `npm run build` at the root.
+   *   For the playground, verify it runs via `npm run dev`.
 4.  **Commit** your changes with clear messages.
 5.  **Push** to your fork.
 6.  **Open a Pull Request** against the `main` branch of the `gram` repository.
