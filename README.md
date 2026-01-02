@@ -59,8 +59,6 @@ While Cooklang focuses on natural language fluidity, GRAM prioritizes **data int
 [Bake] In the #oven{} at !{200°C}.
 ```
 
-```
-
 You can find more real-world examples in the `examples/` directory at the root of the project.
 
 ---
