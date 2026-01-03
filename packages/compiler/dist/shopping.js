@@ -40,39 +40,51 @@ function generateShoppingList(sections, registry) {
                     compositeMap.set(parentId, {
                         type: 'composite',
                         id: parentId,
-                        qty: 0, // Will be Max
+                        qty: 0,
                         usage: [],
-                        _maxQty: 0
+                        _subUsageMap: new Map(),
+                        _usageAccumulator: new Map()
                     });
                 }
                 const comp = compositeMap.get(parentId);
-                // Usage entry
-                const usageEntry = { id: item.id };
-                let declQty = 0;
-                const cleanComp = item.composite;
-                if (cleanComp && cleanComp.quantity) {
-                    const minQ = (0, utils_1.minifyQuantity)(cleanComp.quantity);
-                    if (minQ !== undefined)
-                        usageEntry.qty = minQ;
+                // 1. Accumulate Parent Quantity Requirement per Sub-Ingredient
+                // If we have multiple batches of Whites, we sum the Parent requirements for Whites.
+                // If we have Whites and Yolks, we take the MAX of (TotalWhitesRequirement, TotalYolksRequirement).
+                let declParentQty = 0;
+                if (item.composite && item.composite.quantity) {
+                    const minQ = (0, utils_1.minifyQuantity)(item.composite.quantity);
                     if (typeof minQ === 'number')
-                        declQty = minQ;
+                        declParentQty = minQ;
                 }
-                // Driver logic: MAX
-                if (declQty > comp._maxQty) {
-                    comp._maxQty = declQty;
-                    comp.qty = declQty;
+                const subId = item.id;
+                const currentParentTotal = comp._subUsageMap.get(subId) || 0;
+                comp._subUsageMap.set(subId, currentParentTotal + declParentQty);
+                // 2. Accumulate Usage (Child Quantity)
+                // Merge usages if ID and Unit match
+                const uUnit = item.unit || '';
+                const uKey = `${subId}::${uUnit}`;
+                if (!comp._usageAccumulator.has(uKey)) {
+                    comp._usageAccumulator.set(uKey, {
+                        id: subId,
+                        unit: item.unit,
+                        qty: 0,
+                        alias: item.alias
+                    });
                 }
-                if (item.qty) {
-                    // Add own quantity to usage if present
+                const uEntry = comp._usageAccumulator.get(uKey);
+                let childVal = 0;
+                if (typeof item.qty === 'number') {
+                    childVal = item.qty;
                 }
-                const u = { id: item.id };
-                if (item.qty !== undefined)
-                    u.qty = item.qty;
-                if (item.unit)
-                    u.unit = item.unit;
-                if (item.alias)
-                    u.alias = item.alias;
-                comp.usage.push(u);
+                else if (item.qty && typeof item.qty === 'object') {
+                    // Try to get numeric value from object
+                    const m = (0, utils_1.minifyQuantity)(item.qty);
+                    if (typeof m === 'number')
+                        childVal = m;
+                }
+                if (typeof uEntry.qty === 'number') {
+                    uEntry.qty += childVal;
+                }
                 return;
             }
             const id = item.id;
@@ -212,7 +224,16 @@ function generateShoppingList(sections, registry) {
     });
     // Process Composites
     const compositeList = [...compositeMap.values()].map(c => {
-        const { _maxQty, ...rest } = c;
+        // Finalize Parent Qty: Max of the sums of sub-parts
+        let maxQ = 0;
+        for (const q of c._subUsageMap.values()) {
+            if (q > maxQ)
+                maxQ = q;
+        }
+        c.qty = maxQ;
+        // Finalize Usage List
+        c.usage = [...c._usageAccumulator.values()];
+        const { _subUsageMap, _usageAccumulator, ...rest } = c;
         return rest;
     });
     return [

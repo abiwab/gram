@@ -15,7 +15,8 @@ interface CompositeItem {
     id: string;
     qty: number;
     usage: Partial<Usage>[];
-    _maxQty: number;
+    _subUsageMap: Map<string, number>;
+    _usageAccumulator: Map<string, Partial<Usage>>;
 }
 export declare function generateShoppingList(sections: ProcessedSection[], registry: Registry): (ShoppingListItem | CompositeItem | Usage)[];
 export {};

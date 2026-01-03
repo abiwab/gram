@@ -21,7 +21,8 @@ interface CompositeItem {
     id: string;
     qty: number;
     usage: Partial<Usage>[];
-    _maxQty: number;
+    _subUsageMap: Map<string, number>;
+    _usageAccumulator: Map<string, Partial<Usage>>;
 }
 
 function formatQuantity(q: any): string | number {
@@ -62,40 +63,57 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
                      compositeMap.set(parentId, { 
                          type: 'composite',
                          id: parentId, 
-                         qty: 0, // Will be Max
+                         qty: 0, 
                          usage: [],
-                         _maxQty: 0
+                         _subUsageMap: new Map(),
+                         _usageAccumulator: new Map()
                      });
                  }
                  const comp = compositeMap.get(parentId)!;
                  
-                 // Usage entry
-                 const usageEntry: Partial<Usage> = { id: item.id };
-                 let declQty = 0;
-                 const cleanComp = item.composite;
+                 // 1. Accumulate Parent Quantity Requirement per Sub-Ingredient
+                 // If we have multiple batches of Whites, we sum the Parent requirements for Whites.
+                 // If we have Whites and Yolks, we take the MAX of (TotalWhitesRequirement, TotalYolksRequirement).
                  
-                 if (cleanComp && cleanComp.quantity) {
-                      const minQ = minifyQuantity(cleanComp.quantity);
-                      if (minQ !== undefined) usageEntry.qty = minQ as any;
-                      if (typeof minQ === 'number') declQty = minQ;
+                 let declParentQty = 0;
+                 if (item.composite && item.composite.quantity) {
+                      const minQ = minifyQuantity(item.composite.quantity);
+                      if (typeof minQ === 'number') declParentQty = minQ;
                  }
                  
-                 // Driver logic: MAX
-                 if (declQty > comp._maxQty) {
-                     comp._maxQty = declQty;
-                     comp.qty = declQty;
+                 const subId = item.id;
+                 const currentParentTotal = comp._subUsageMap.get(subId) || 0;
+                 comp._subUsageMap.set(subId, currentParentTotal + declParentQty);
+
+                 // 2. Accumulate Usage (Child Quantity)
+                 // Merge usages if ID and Unit match
+                 
+                 const uUnit = item.unit || '';
+                 const uKey = `${subId}::${uUnit}`;
+                 
+                 if (!comp._usageAccumulator.has(uKey)) {
+                      comp._usageAccumulator.set(uKey, {
+                          id: subId,
+                          unit: item.unit,
+                          qty: 0,
+                          alias: item.alias 
+                      });
+                 }
+                 const uEntry = comp._usageAccumulator.get(uKey)!;
+                 
+                 let childVal = 0;
+                 if (typeof item.qty === 'number') {
+                     childVal = item.qty;
+                 } else if (item.qty && typeof item.qty === 'object') {
+                     // Try to get numeric value from object
+                     const m = minifyQuantity(item.qty);
+                     if (typeof m === 'number') childVal = m;
                  }
                  
-                 if (item.qty) {
-                     // Add own quantity to usage if present
+                 if (typeof uEntry.qty === 'number') {
+                     uEntry.qty += childVal;
                  }
                  
-                 const u: Partial<Usage> = { id: item.id };
-                 if (item.qty !== undefined) u.qty = item.qty;
-                 if (item.unit) u.unit = item.unit;
-                 if (item.alias) u.alias = item.alias;
-                 
-                 comp.usage.push(u);
                  return;
             }
 
@@ -239,7 +257,18 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
     
     // Process Composites
     const compositeList = [...compositeMap.values()].map(c => {
-        const { _maxQty, ...rest } = c;
+        
+        // Finalize Parent Qty: Max of the sums of sub-parts
+        let maxQ = 0;
+        for (const q of c._subUsageMap.values()) {
+            if (q > maxQ) maxQ = q;
+        }
+        c.qty = maxQ;
+
+        // Finalize Usage List
+        c.usage = [...c._usageAccumulator.values()];
+
+        const { _subUsageMap, _usageAccumulator, ...rest } = c;
         return rest;
     });
 
