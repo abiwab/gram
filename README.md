@@ -9,7 +9,7 @@
 
 GRAM is designed to write structured, machine-readable recipes without sacrificing readability. It treats recipes as **code**, compiling ingredients, instructions, and cookware into a strict AST (Abstract Syntax Tree) for precise analysis, scaling, and shopping list generation.
 
-[**👉 Try the Online Playground**](https://abiwab.github.io/gram/playground/) *(or run it locally)*
+[**👉 Try the Online Playground**](https://abiwab.github.io/gram/packages/playground/) *(or run it locally)*
 
 > **🚧 Project Status: Active Development**
 > GRAM is currently in an **Alpha stage**. The syntax specification is stabilizing, but the parser logic is actively being refined. Breaking changes may occur.
@@ -57,8 +57,6 @@ While Cooklang focuses on natural language fluidity, GRAM prioritizes **data int
 [Rest] For ~{30min}.
 
 [Bake] In the #oven{} at !{200°C}.
-```
-
 ```
 
 You can find more real-world examples in the `examples/` directory at the root of the project.
