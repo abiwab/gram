@@ -8,17 +8,11 @@ const status = document.getElementById('status');
 const themeToggle = document.getElementById('theme-toggle');
 // Output Mode Logic
 const warningsArea = document.getElementById('warnings');
-const tabButtons = document.querySelectorAll('.tab-btn[data-mode]');
-tabButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-        // Update active state
-        tabButtons.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        
-        // Update logic
-        outputMode = btn.dataset.mode;
-        update();
-    });
+const viewSelect = document.getElementById('view-mode');
+
+viewSelect.addEventListener('change', () => {
+    outputMode = viewSelect.value;
+    update();
 });
 
 // Theme Logic
@@ -342,6 +336,9 @@ function update() {
              } else {
                  hideWarnings();
              }
+        } else if (outputMode === 'ast') {
+             content = renderSExpr(ast);
+             hideWarnings();
         } else if (outputMode === 'markdown') {
              content = renderMarkdown(result);
              if (result.warnings && result.warnings.length > 0) {
@@ -438,6 +435,9 @@ function update() {
             if (outputMode === 'json') {
                 output.textContent = content;
                 output.className = 'language-json';
+            } else if (outputMode === 'ast') {
+                output.textContent = content;
+                output.className = 'language-lisp'; // Use Lisp highlighting for S-Expr
             } else {
                 output.textContent = content; 
                 output.className = 'language-markdown';
@@ -800,6 +800,58 @@ function formatIngredientHTML(item, registry) {
     
     str += `</span>`;
     return str;
+}
+
+function renderSExpr(node, level = 0) {
+    if (node === null || node === undefined) return 'nil';
+    if (typeof node !== 'object') {
+        if (typeof node === 'string') return `"${node}"`;
+        return String(node);
+    }
+    
+    // Array handling
+    if (Array.isArray(node)) {
+        return node.map(n => renderSExpr(n, level)).join('\n');
+    }
+
+    const indent = '  '.repeat(level);
+    const type = node.type || 'Object';
+    
+    // Collect attributes and children
+    let attrs = '';
+    let children = [];
+
+    // Keys to ignore or handle specifically
+    const ignore = new Set(['type', 'loc']);
+
+    Object.entries(node).forEach(([k, v]) => {
+        if (ignore.has(k)) return;
+        
+        if (v === null) return;
+
+        if (typeof v !== 'object') {
+            attrs += ` :${k} ${typeof v === 'string' ? `"${v}"` : v}`;
+        } else if (Array.isArray(v)) {
+            // Array of children
+            v.forEach(child => children.push(child));
+        } else {
+            // Single child object
+            // If it's a "Range" value object (special case in gram)
+            if (v.min !== undefined && v.max !== undefined) {
+                 attrs += ` :${k} ${v.min}-${v.max}`;
+            } else {
+                 children.push(v);
+            }
+        }
+    });
+
+    if (children.length === 0) {
+        return `${indent}(${type}${attrs})`;
+    }
+
+    // Format children
+    const childrenStr = children.map(c => renderSExpr(c, level + 1)).join('\n');
+    return `${indent}(${type}${attrs}\n${childrenStr})`;
 }
 
 function formatCookwareHTML(item, registry) {

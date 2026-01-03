@@ -61,11 +61,15 @@
                 <div class="header-bar">
                     <div style="display: flex; gap: 1rem; align-items: center;">
                         <h2>Output</h2>
-                        <div class="tabs" style="display: flex; gap: 0.25rem; background: var(--secondary); padding: 0.25rem; border-radius: 6px;">
-                            <button class="tab-btn active" data-mode="json">JSON (Text)</button>
-                            <button class="tab-btn" data-mode="json-tree">Tree</button>
-                            <button class="tab-btn" data-mode="markdown">Markdown</button>
-                            <button class="tab-btn" data-mode="preview">Preview</button>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <label for="view-mode" style="font-size: 0.9rem; color: var(--muted-foreground);">View:</label>
+                            <select id="view-mode" style="background: var(--card); color: var(--foreground); border: 1px solid var(--border); padding: 0.4rem 0.5rem; border-radius: 0.375rem; font-family: var(--font-sans); cursor: pointer; font-size: 0.9rem;">
+                                <option value="json" selected>JSON Output</option>
+                                <option value="ast">AST (Raw)</option>
+                                <option value="json-tree">Interactive Tree</option>
+                                <option value="markdown">Markdown</option>
+                                <option value="preview">Preview (HTML)</option>
+                            </select>
                         </div>
                     </div>
                     <div style="display: flex; gap: 1rem; align-items: center;">
