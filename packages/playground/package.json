@@ -1,6 +1,6 @@
 {
   "name": "gram-playground",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Browser-based playground and IDE for the GRAM recipe language",
   "author": "abiwab",
   "license": "GPL-3.0",
@@ -18,7 +18,9 @@
     "start": "echo '🔨 Bundling...' && node build.js && echo '🌐 Serving at http://localhost:3000' && npx serve"
   },
   "dependencies": {
-    "ohm-js": "^17.2.1"
+    "ohm-js": "^17.2.1",
+    "gram-parser": "file:../parser",
+    "gram-compiler": "file:../compiler"
   },
   "devDependencies": {
     "esbuild": "^0.24.0"
