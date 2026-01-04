@@ -195,7 +195,12 @@ function renderMarkdown(data) {
                          } else if (c.type === 'text') {
                              str = c.value;
                          } else if (c.type === 'timer') {
-                             str = `⏲️${formatQuantityValue(c.quantity)}${c.unit ? ' ' + c.unit : ''}`;
+                             const qStr = `${formatQuantityValue(c.quantity)}${c.unit ? ' ' + c.unit : ''}`;
+                             if (c.isAsync) {
+                                 str = `⏳ ${qStr} (async)`;
+                             } else {
+                                 str = `⏲️ ${qStr}`;
+                             }
                          } else if (c.type === 'temperature') {
                              str = `🔥${formatQuantityValue(c.quantity)}${c.unit ? ' ' + c.unit : ''}`;
                          } else if (c.type === 'reference') {
@@ -607,7 +612,8 @@ function renderHTML(data) {
                          } else if (c.type === 'timer') {
                              const q = c.quantity || { value: '' };
                              const qVal = formatQuantityValue(q);
-                             str = `<span class="timer" data-value="${q.value}" data-unit="${c.unit || ''}">${qVal}${c.unit ? ' ' + c.unit : ''}</span>`;
+                             const asyncClass = c.isAsync ? ' async' : '';
+                             str = `<span class="timer${asyncClass}" data-value="${q.value}" data-unit="${c.unit || ''}">${qVal}${c.unit ? ' ' + c.unit : ''}</span>`;
                          } else if (c.type === 'temperature') {
                              const q = c.quantity || { value: '' };
                              const qVal = formatQuantityValue(q);

@@ -470,6 +470,15 @@ code {
   border-radius: 4px;
   border: 1px solid var(--item-timer-border);
 }
+.preview-output .timer.async {
+  border-style: dashed;
+  opacity: 0.9;
+}
+.preview-output .timer.async::after {
+  content: " ⏳";
+  font-size: 0.8em;
+  opacity: 0.7;
+}
 .preview-output .temp {
   font-weight: 600;
   color: var(--item-temp-text);
