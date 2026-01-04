@@ -151,10 +151,34 @@ function processBlockItem(item, ctx, registry, secIngredients, secCookware) {
         return usage;
     }
     if (item.type === 'Alternative') {
-        const options = item.options.map((opt) => processBlockItem(opt, ctx, registry, [], []));
-        const usage = { id: 'alternative', type: 'alternative', options };
-        // We need to infer where to push based on first option, BUT processBlockItem returns Usage.
-        // Let's look at the AST type to decide
+        const processedOptions = [];
+        // Sequential processing to allow internal references (e.g. A | B{50% A})
+        // We create a temporary scope that accumulates previous options just for relative resolution visibility.
+        // We do NOT modify the actual secIngredients/secCookware here, they are passed as context only if read.
+        let tempIngredientsScope = [...secIngredients];
+        let tempCookwareScope = [...secCookware];
+        item.options.forEach((opt) => {
+            // We pass temporary Arrays to capture outputs without polluting the main Section list yet
+            // But wait, processBlockItem PUSHES to the arrays passed. 
+            // So we need to pass a fake array to catch the output, but populate it with context first.
+            // Actually, resolveRelativeQuantity reads from the array passed as 4th arg.
+            // So we need to pass [ ...mainList, ...prevOptions ].
+            const captureIngredients = [...tempIngredientsScope];
+            const captureCookware = [...tempCookwareScope];
+            const result = processBlockItem(opt, ctx, registry, captureIngredients, captureCookware);
+            processedOptions.push(result);
+            // If the option produced an ingredient/cookware, make it available for next options in this group
+            if (result && typeof result !== 'string') {
+                const r = result;
+                if (r.type === 'ingredient' || r.type === 'drink' || (r.id && !r.type)) {
+                    tempIngredientsScope.push(r);
+                }
+                if (r.type === 'cookware') {
+                    tempCookwareScope.push(r);
+                }
+            }
+        });
+        const usage = { id: 'alternative', type: 'alternative', options: processedOptions };
         if (item.options.length > 0) {
             if (item.options[0].type === 'Ingredient') {
                 secIngredients.push(usage);
