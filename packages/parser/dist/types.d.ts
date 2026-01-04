@@ -100,6 +100,7 @@ export interface TimerAST extends NodeAST {
     type: 'Timer';
     name?: string | null;
     quantity: QuantityAST | TextQuantityAST;
+    isAsync: boolean;
 }
 export interface TemperatureAST extends NodeAST {
     type: 'Temperature';
@@ -164,9 +165,23 @@ export interface ProcessedSection {
     title: string | null;
     ingredients: Usage[];
     cookware: Usage[];
-    steps: any[];
+    steps: ProcessedStep[];
     intermediate_preparation?: string;
     retro_planning?: string | null;
+}
+export interface ProcessedStep {
+    type: 'step';
+    value: string;
+    timings: {
+        start: number;
+        end: number;
+        activeDuration: number;
+    };
+    backgroundTasks: Array<{
+        name?: string;
+        duration: number;
+        startOffset: number;
+    }>;
 }
 export interface CompilationResult {
     title: string | null;
@@ -183,4 +198,8 @@ export interface CompilationResult {
     cookware: Usage[];
     sections: ProcessedSection[];
     warnings: any[];
+    metrics: {
+        totalTime: number;
+        activeTime: number;
+    };
 }

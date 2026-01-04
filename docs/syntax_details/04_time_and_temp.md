@@ -29,6 +29,24 @@ The name goes between `~` and the brace.
 Cook eggs ~eggs{3min} and pasta ~pasta{9min}.
 ```
 
+### Asynchronous Tasks
+By default, a timer blocks the "Active Time" (the cook is busy). 
+To indicate a background task (e.g., baking, rising, marinating) where the cook is free to do other steps, add `&` at the end.
+
+*   `~{1h}&` : Async (Background).
+*   `~{10m}` : Sync (Blocking).
+
+**Example:**
+```gram
+Knead ~{10min}. Rise ~{1h}&.
+```
+*   Step 1: 10m active time.
+*   Step 2: 0m active time (starts immediately after kneading). Cook is free.
+
+### Default Timings
+If a step has **no timers** and is not asynchronous, the compiler assigns a default **2 minutes** active time (reading, mixing, etc.).
+Async steps (`~{...}&`) have **0 active time**.
+
 ---
 
 ## Temperatures

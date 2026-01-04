@@ -85,7 +85,7 @@ GRAM {
   cookwareQuantity = "{" space* (fixed space*)? number? space* "}"
 
   // Timer
-  Timer = "~" name? ingredientQuantity
+  Timer = "~" name? ingredientQuantity "&"?
   
   // Temperature
   Temperature = "!" name? (ingredientQuantity | textQuantity)

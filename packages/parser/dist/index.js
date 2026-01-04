@@ -289,9 +289,15 @@ semantics.addOperation('toAST', {
             loc: { start: this.source.startIdx, end: this.source.endIdx }
         };
     },
-    Timer(_1, name, qty) {
+    Timer(_1, name, qty, asyncMod) {
         const n = name.children.length > 0 ? clean(name.children[0].sourceString) : null;
-        return { type: 'Timer', name: n, quantity: qty.toAST(), loc: { start: this.source.startIdx, end: this.source.endIdx } };
+        return {
+            type: 'Timer',
+            name: n,
+            quantity: qty.toAST(),
+            isAsync: asyncMod.children.length > 0,
+            loc: { start: this.source.startIdx, end: this.source.endIdx }
+        };
     },
     Temperature(_1, name, qty) {
         const n = name.children.length > 0 ? clean(name.children[0].sourceString) : null;

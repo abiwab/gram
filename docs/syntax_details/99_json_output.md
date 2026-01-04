@@ -15,7 +15,11 @@ The root object contains the following keys:
   "shopping_list": [ ... ],// Aggregated list for shopping
   "cookware": [ ... ],     // Aggregated cookware list
   "sections": [ ... ],     // The cooking steps and local ingredient usage
-  "warnings": [ ... ]      // Parsing warnings (if any)
+  "warnings": [ ... ],     // Parsing warnings (if any)
+  "metrics": {             // Optimization & Gantt Data
+     "totalTime": 120,     // Total duration (critical path) in minutes
+     "activeTime": 45      // Active work time in minutes
+  }
 }
 ```
 
@@ -96,7 +100,13 @@ Recipe logic is strictly hierarchical: `Sections -> Steps -> Content`.
     "steps": [
       {
         "type": "step",
-        "action": "Mix",    // Optional action verb
+        "value": "Mix the flour and water...", // Reconstructed text
+        "timings": {
+           "start": 0,          // Start time (minutes)
+           "end": 5,            // End time (minutes)
+           "activeDuration": 5  // Blocking time
+        },
+        "backgroundTasks": [], // Async tasks starting here
         "content": [        // Polymorphic Array
           "Combine the ",
           { "id": "flour", "qty": 200, "unit": "g" },

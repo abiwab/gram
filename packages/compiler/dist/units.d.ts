@@ -13,3 +13,4 @@ export interface MassResult {
     valid: boolean;
 }
 export declare const getMass: (qty: any, unit?: string | null) => MassResult;
+export declare const quantityToMinutes: (qty: any) => number;

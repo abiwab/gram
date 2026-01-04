@@ -123,6 +123,7 @@ export interface TimerAST extends NodeAST {
     type: 'Timer';
     name?: string | null;
     quantity: QuantityAST | TextQuantityAST;
+    isAsync: boolean;
 }
 
 export interface TemperatureAST extends NodeAST {
@@ -194,9 +195,26 @@ export interface ProcessedSection {
     title: string | null;
     ingredients: Usage[];
     cookware: Usage[];
-    steps: any[];
+    steps: ProcessedStep[];
     intermediate_preparation?: string;
     retro_planning?: string | null;
+}
+
+export interface ProcessedStep {
+    type: 'step';
+    value: string; // The reconstructed text of the step
+    // Gantt Data
+    timings: {
+        start: number;       // Global start time (in minutes, relative to T=0)
+        end: number;         // Global end time (when the cook is free)
+        activeDuration: number; // How long the cook is blocked on this step
+    };
+    // Tasks running in background started during this step
+    backgroundTasks: Array<{
+        name?: string;       // E.g., "baking" or the timer name
+        duration: number;    // In minutes
+        startOffset: number; // Relative to step start
+    }>;
 }
 
 export interface CompilationResult {
@@ -211,4 +229,8 @@ export interface CompilationResult {
     cookware: Usage[];
     sections: ProcessedSection[];
     warnings: any[];
+    metrics: {
+        totalTime: number;   // Critical path duration (end of last async task)
+        activeTime: number;  // Sum of cook work time
+    };
 }
