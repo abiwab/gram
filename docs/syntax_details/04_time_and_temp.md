@@ -47,6 +47,8 @@ Knead ~{10min}. Rise ~{1h}&.
 If a step has **no timers** and is not asynchronous, the compiler assigns a default **2 minutes** active time (reading, mixing, etc.).
 Async steps (`~{...}&`) have **0 active time**.
 
+> **Tip:** Asynchronous timers (`&`) allow applications to generate automated Gantt charts, calculate total vs. active time, and help the cook identify parallel tasks.
+
 ---
 
 ## Temperatures
