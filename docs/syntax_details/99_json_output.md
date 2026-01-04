@@ -100,6 +100,7 @@ Recipe logic is strictly hierarchical: `Sections -> Steps -> Content`.
     "steps": [
       {
         "type": "step",
+        "action": "Mix",    // Optional action verb
         "value": "Mix the flour and water...", // Reconstructed text
         "timings": {
            "start": 0,          // Start time (minutes)
