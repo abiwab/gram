@@ -33,6 +33,8 @@ This is a key feature of cookware in GRAM. The system guesses if the tool should
 | `#ramekins{4}` | **SCALABLE** | Numbered quantity = We assume it's linked to servings. | `#ramekins{4}`. If I double the recipe, I need 8. |
 | `#pan{=2}` | **FIXED (Explicit)** | The `=` sign forces fixed mode. | `#pan{=2}`. I use 2 pans to cook crepes faster, even if I make 1000 crepes, I only have 2 pans. |
 
+> **Tip:** This logic allows the recipe to scale intelligently: you'll always have enough *service* items (ramekins, plates) without erroneously multiplying *equipment* (ovens, mixers).
+
 ## Best Practices
 
 1.  **Distinguish container from tool.**

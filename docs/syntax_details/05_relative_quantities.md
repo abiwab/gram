@@ -12,6 +12,8 @@ A relative quantity `@A{X% @B}` attempts to answer the question: "How much is X%
 1.  **Ingredient Reference (`@Ingredient`)**: Searches for previous occurrences of this ingredient *within the same section*.
 2.  **Variable Reference (`&Preparation`)**: Searches for the intermediate preparation defined previously (`->&Preparation`).
 
+> **Tip:** This makes your recipe "Responsive". Changes to the main ingredient (e.g., scaling the flour) automatically propagate to all relative ingredients, ensuring the ratio remains perfect.
+
 ---
 
 ## Decision Matrix
