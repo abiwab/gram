@@ -81,6 +81,15 @@ function formatQuantityValue(q) {
     return q;
 }
 
+// Helper for duration formatting
+function formatDuration(minutes) {
+    if (!minutes) return '0m';
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    if (h > 0) return `${h}h ${m > 0 ? m + 'm' : ''}`;
+    return `${m}m`;
+}
+
 function renderMarkdown(data) {
     const registry = data.registry || { ingredients: {}, cookware: {} };
     let md = '';
@@ -88,11 +97,17 @@ function renderMarkdown(data) {
     // Title
     if (data.title) md += `# ${data.title}\n\n`;
     
-    // Meta
-    if (data.meta && Object.keys(data.meta).length > 0) {
+    // Meta & Metrics
+    if ((data.meta && Object.keys(data.meta).length > 0) || data.metrics) {
         md += `> **Metadata**\n`;
-        for (const [k, v] of Object.entries(data.meta)) {
-            if (k !== 'title') md += `> - ${k}: ${v}\n`;
+        if (data.metrics) {
+            md += `> - **Total Time**: ${formatDuration(data.metrics.totalTime)}\n`;
+            md += `> - **Active Time**: ${formatDuration(data.metrics.activeTime)}\n`;
+        }
+        if (data.meta) {
+            for (const [k, v] of Object.entries(data.meta)) {
+                if (k !== 'title') md += `> - ${k}: ${v}\n`;
+            }
         }
         md += '\n';
     }
@@ -478,12 +493,25 @@ function renderHTML(data) {
         html += `<h1>${escapeHtml(data.title)}</h1>\n\n`;
     }
     
-    // Meta
-    if (data.meta && Object.keys(data.meta).length > 0) {
+    // Meta & Metrics
+    if ((data.meta && Object.keys(data.meta).length > 0) || data.metrics) {
         html += `<div class="metadata">\n`;
         html += `  <ul>\n`;
-        for (const [k, v] of Object.entries(data.meta)) {
-            if (k !== 'title') html += `    <li><strong>${escapeHtml(k)}</strong>: ${escapeHtml(v)}</li>\n`;
+        
+        // Metrics first for visibility
+        if (data.metrics) {
+            html += `    <li class="metrics-item"><strong>🕒 Total Time</strong>: ${formatDuration(data.metrics.totalTime)}</li>\n`;
+            html += `    <li class="metrics-item"><strong>👨‍🍳 Active Time</strong>: ${formatDuration(data.metrics.activeTime)}</li>\n`;
+            // Separator if meta exists
+            if (data.meta && Object.keys(data.meta).length > 0) {
+                 html += `    <li class="separator"></li>\n`;
+            }
+        }
+
+        if (data.meta) {
+            for (const [k, v] of Object.entries(data.meta)) {
+                if (k !== 'title') html += `    <li><strong>${escapeHtml(k)}</strong>: ${escapeHtml(v)}</li>\n`;
+            }
         }
         html += `  </ul>\n`;
         html += `</div>\n\n`;
