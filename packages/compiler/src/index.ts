@@ -367,6 +367,7 @@ function processSections(astChildren: any[], registry: Registry): { sections: Pr
                  const stepObj: ProcessedStep = {
                      type: 'step',
                      value: stepText.trim(),
+                     content: stepContentObjects,
                      timings: {
                          start: startTime,
                          end: endTime,

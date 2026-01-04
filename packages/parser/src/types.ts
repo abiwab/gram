@@ -215,6 +215,7 @@ export interface ProcessedStep {
         duration: number;    // In minutes
         startOffset: number; // Relative to step start
     }>;
+    content: any[];
 }
 
 export interface CompilationResult {

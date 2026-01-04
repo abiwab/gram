@@ -182,6 +182,7 @@ export interface ProcessedStep {
         duration: number;
         startOffset: number;
     }>;
+    content: any[];
 }
 export interface CompilationResult {
     title: string | null;

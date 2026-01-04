@@ -311,7 +311,7 @@ function processSections(astChildren, registry) {
                                 if (p.isAsync)
                                     stepText += '&';
                                 // Gantt: Timer Handling
-                                const duration = (0, units_1.quantityToMinutes)(p.quantity);
+                                const duration = (0, units_1.quantityToMinutes)({ value: p.quantity, unit: p.unit });
                                 if (p.isAsync) {
                                     stepAsyncTasks.push({
                                         name: p.name || 'Timer',
@@ -350,6 +350,7 @@ function processSections(astChildren, registry) {
                 const stepObj = {
                     type: 'step',
                     value: stepText.trim(),
+                    content: stepContentObjects,
                     timings: {
                         start: startTime,
                         end: endTime,

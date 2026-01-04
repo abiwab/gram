@@ -66,7 +66,16 @@ const quantityToMinutes = (qty) => {
         }
         else if (qty.value !== undefined) {
             // Fallback for simple objects
-            val = qty.value;
+            let raw = qty.value;
+            if (typeof raw === 'object' && raw !== null) {
+                if (raw.type === 'single')
+                    raw = raw.value;
+                else if (raw.type === 'fraction')
+                    raw = raw.value;
+                else if (raw.type === 'range' && raw.range)
+                    raw = (raw.range.min + raw.range.max) / 2;
+            }
+            val = raw;
             unit = qty.unit || '';
         }
     }
