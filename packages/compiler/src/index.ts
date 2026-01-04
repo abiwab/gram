@@ -501,7 +501,51 @@ export function compile(ast: RecipeAST): CompilationResult {
         cookware: globalCookware,
         sections,
         warnings: registry.warnings,
-        metrics: resultPayload.metrics
+        metrics: {
+            ...resultPayload.metrics,
+            preparationTime: (() => {
+                let t = 0;
+                // 1. Base: 1 min per unique ingredient (including sub-ingredients if registered)
+                t += registry.ingredients.size * 1;
+                // 2. Base: 1 min per unique cookware
+                t += registry.cookware.size * 1;
+
+                // 3. Usage Bonus: +2 min for each manual preparation step
+                const countPrep = (item: any): number => {
+                    let localTime = 0;
+                    if (!item) return 0;
+                    
+                    // Direct ingredient with preparation text
+                    if (item.type === 'ingredient' && item.preparation) {
+                         localTime += 2;
+                    }
+                    
+                    // Groups / Alternatives : take the WORST case (MAX)
+                    if (item.options && Array.isArray(item.options)) {
+                        let maxOpt = 0;
+                        item.options.forEach((opt: any) => {
+                             const optTime = countPrep(opt);
+                             if (optTime > maxOpt) maxOpt = optTime;
+                        });
+                        // Add the max cost of the alternatives to the current item cost (usually 0 if it's just a group container)
+                        localTime += maxOpt;
+                    } else if (!item.type && item.id && item.preparation) { // Polymorphic fallback
+                        localTime += 2;
+                    }
+                    
+                    return localTime;
+                };
+
+                sections.forEach(sec => {
+                    sec.steps.forEach(s => {
+                         if (s.content) s.content.forEach((c: any) => {
+                             t += countPrep(c);
+                         });
+                    });
+                });
+                return t;
+            })()
+        }
     };
 
     return cleanObject(result);

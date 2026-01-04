@@ -233,5 +233,6 @@ export interface CompilationResult {
     metrics: {
         totalTime: number;   // Critical path duration (end of last async task)
         activeTime: number;  // Sum of cook work time
+        preparationTime: number; // Estimated mise-en-place time
     };
 }

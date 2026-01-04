@@ -47,6 +47,12 @@ Knead ~{10min}. Rise ~{1h}&.
 If a step has **no timers** and is not asynchronous, the compiler assigns a default **2 minutes** active time (reading, mixing, etc.).
 Async steps (`~{...}&`) have **0 active time**.
 
+### Estimated Preparation Time (Mise en Place)
+The compiler automatically estimates the "Mise en place" time based on the recipe complexity:
+*   **Base**: 1 min per unique ingredient and cookware (weighing, fetching).
+*   **Preparation**: +2 min for each ingredient usage with a specific preparation (e.g., `(chopped)`, `(peeled)`).
+*   **Alternatives**: Takes the maximum time of possible options.
+
 > **Tip:** Asynchronous timers (`&`) allow applications to generate automated Gantt charts, calculate total vs. active time, and help the cook identify parallel tasks.
 
 ---

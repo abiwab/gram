@@ -103,6 +103,9 @@ function renderMarkdown(data) {
         if (data.metrics) {
             md += `> - **Total Time**: ${formatDuration(data.metrics.totalTime)}\n`;
             md += `> - **Active Time**: ${formatDuration(data.metrics.activeTime)}\n`;
+            if (data.metrics.preparationTime) {
+                md += `> - **Mise en place**: ${formatDuration(data.metrics.preparationTime)} (est.)\n`;
+            }
         }
         if (data.meta) {
             for (const [k, v] of Object.entries(data.meta)) {
@@ -502,6 +505,10 @@ function renderHTML(data) {
         if (data.metrics) {
             html += `    <li class="metrics-item"><strong>🕒 Total Time</strong>: ${formatDuration(data.metrics.totalTime)}</li>\n`;
             html += `    <li class="metrics-item"><strong>👨‍🍳 Active Time</strong>: ${formatDuration(data.metrics.activeTime)}</li>\n`;
+            if (data.metrics.preparationTime) {
+                html += `    <li class="metrics-item" title="Based on ingredient count and complexity"><strong>🔪 Mise en place</strong>: ${formatDuration(data.metrics.preparationTime)} <small style="opacity:0.6; font-weight:normal">(est.)</small></li>\n`;
+            }
+
             // Separator if meta exists
             if (data.meta && Object.keys(data.meta).length > 0) {
                  html += `    <li class="separator"></li>\n`;

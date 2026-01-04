@@ -202,5 +202,6 @@ export interface CompilationResult {
     metrics: {
         totalTime: number;
         activeTime: number;
+        preparationTime: number;
     };
 }
