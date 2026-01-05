@@ -52,7 +52,7 @@ While Cooklang focuses on natural language fluidity, GRAM prioritizes **data int
 
 [Mix] The @flour{200g} and @water{100ml}. ->&dough{}
 
-[Add] The @&dough{} to a #bowl{}.
+[Add] The &dough{} to a #bowl{}.
 
 [Rest] For ~{30min}.
 
