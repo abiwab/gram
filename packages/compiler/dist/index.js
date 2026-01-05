@@ -405,7 +405,7 @@ function processSections(astChildren, registry, overrides) {
                                 stepText += `#${p.name}`;
                             }
                             else if (p.type === 'temperature') {
-                                const qtyVal = p.quantity.value || p.quantity;
+                                const qtyVal = (p.quantity && p.quantity.value) ? p.quantity.value : (p.quantity || '');
                                 stepText += `!${p.name || ''}{${qtyVal}${p.unit || ''}}`;
                             }
                             else if (p.type === 'reference') {

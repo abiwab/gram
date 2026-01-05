@@ -45,6 +45,7 @@ function scanExamples() {
 
         } catch (e: any) {
             console.error(`   ❌ Error compiling ${file}:`, e.message);
+            console.error(e.stack);
         }
     });
 

@@ -61,7 +61,9 @@ function getQty(item) {
         if (typeof item.qty === 'number') return { value: item.qty, text: String(item.qty) };
         return item.qty;
     }
-    return item.quantity;
+    // Fallback for old getters, check if S and S.quantity exists
+    if (item.quantity) return item.quantity;
+    return undefined;
 }
 
 // Helper for Timer/Temperature range display
