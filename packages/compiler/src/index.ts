@@ -1,5 +1,5 @@
 
-import { getMass, quantityToMinutes } from './units';
+import { quantityToMinutes } from './units';
 import { slugify, minifyQuantity, createCleanUsage, cleanObject } from './utils';
 import { generateShoppingList } from './shopping';
 import { normalizeMass } from './mass_normalization';
@@ -86,10 +86,17 @@ export function processBlockItem(item: any, ctx: Context, registry: Registry, se
                      // Calculate sum
                      for (const prev of secIngredients) {
                          if (prev.id === targetId) {
-                             const m = getMass(prev.qty, prev.unit);
-                             if (m.valid) {
-                                 totalQty += m.mass;
+                             // Use normalizedMass logic which includes density handling
+                             if (prev.normalizedMass) {
+                                 totalQty += prev.normalizedMass;
                                  if (!inheritedUnit) inheritedUnit = 'g';
+                             } else if (prev.qty && typeof prev.qty === 'number' && prev.unit) {
+                                  // Fallback: try raw normalization if missing on object
+                                  const norm = normalizeMass(prev.qty, prev.unit, prev.name, ctx.densityOverrides);
+                                  if (norm) {
+                                      totalQty += norm.mass;
+                                      if (!inheritedUnit) inheritedUnit = 'g';
+                                  }
                              }
                          }
                      }
@@ -457,20 +464,17 @@ function processSections(astChildren: any[], registry: Registry, overrides?: Rec
                  let stepValid = true;
                  stepContentObjects.forEach(p => {
                       if (typeof p !== 'string') {
-                          let m = 0;
-                          let v = false;
+                          // Prioritize normalized mass
                           if (p.normalizedMass) {
-                                m = p.normalizedMass;
-                                v = true;
-                          } else if (p.qty && typeof p.qty === 'number') {
-                                // Fallback for old getter
-                                const massRes = getMass(p.qty, p.unit);
-                                m = massRes.mass;
-                                v = massRes.valid;
+                                stepMass += p.normalizedMass;
+                          } else if (p.qty && typeof p.qty === 'number' && p.unit) {
+                                // Last resort fallback
+                                const norm = normalizeMass(p.qty, p.unit, p.name, ctx.densityOverrides);
+                                if (norm) stepMass += norm.mass;
                           }
-                          // Reference types should have normalizedMass now if resolved
-                          stepMass += m;
-                          if (p.type === 'ingredient' && !v) stepValid = false;
+                          
+                          // Check validity for partial status
+                          if (p.type === 'ingredient' && !p.normalizedMass) stepValid = false;
                       }
                  });
 

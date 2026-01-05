@@ -568,23 +568,7 @@ function renderHTML(data) {
             } else if (item.display) {
                 html += `    <li>${escapeHtml(item.display)}</li>\n`;
             } else {
-                let massHtml = '';
-                if (item.normalizedMass) {
-                     const mass = Math.round(item.normalizedMass * 10) / 10;
-                     let display = `${mass}g`;
-                     let title = `Calculated Mass: ${mass}g\nMethod: ${item.conversionMethod}`;
-                     if (item.isEstimate) {
-                         display = `~${display}`;
-                         title += ` (Estimated)`;
-                     }
-                     if (item.conversionMethod === 'explicit') {
-                         display = `✍️ ${display}`;
-                         title += ` (User Override)`;
-                     }
-                     massHtml = ` <span class="mass-badge" title="${title}">${display}</span>`;
-                }
-
-                html += `    <li>${formatIngredientHTML(item, registry)}${massHtml}</li>\n`;
+                html += `    <li>${formatIngredientHTML(item, registry)}</li>\n`;
             }
         });
         html += `  </ul>\n`;
