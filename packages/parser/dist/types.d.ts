@@ -160,6 +160,9 @@ export interface Usage {
     type?: string;
     options?: any[];
     name?: string;
+    normalizedMass?: number;
+    conversionMethod?: 'physical' | 'density' | 'unit_weight' | 'default' | 'explicit';
+    isEstimate?: boolean;
 }
 export interface ProcessedSection {
     title: string | null;

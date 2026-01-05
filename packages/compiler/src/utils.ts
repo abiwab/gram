@@ -31,6 +31,8 @@ export const minifyQuantity = (q: any): number | QuantityValueAST | undefined =>
     return q;
 };
 
+import { normalizeMass } from './mass_normalization';
+
 export const createCleanUsage = (item: any, id: string): Usage => {
     const obj: Usage = { id };
     const qtyNode = item.quantity;
@@ -47,6 +49,23 @@ export const createCleanUsage = (item: any, id: string): Usage => {
     
     if (cleanQty !== undefined) obj.qty = cleanQty;
     if (qtyNode && qtyNode.unit) obj.unit = qtyNode.unit;
+
+    // Mass Normalization Integration
+    if (obj.unit) {
+         let valForCalc: number | null = null;
+         if (typeof obj.qty === 'number') valForCalc = obj.qty;
+         else if (obj.qty && typeof obj.qty === 'object' && typeof (obj.qty as any).value === 'number') {
+             valForCalc = (obj.qty as any).value; // Handles Range (avg) and Fraction
+         }
+
+         if (valForCalc !== null) {
+             const norm = normalizeMass(valForCalc, obj.unit);
+             if (norm) {
+                 obj.normalizedMass = norm.mass;
+                 obj.conversionMethod = norm.method;
+             }
+         }
+    }
 
     if (item.modifiers && item.modifiers.length > 0) {
         const MODIFIER_MAP: Record<string, string> = {

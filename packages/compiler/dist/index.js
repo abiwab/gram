@@ -5,6 +5,7 @@ exports.compile = compile;
 const units_1 = require("./units");
 const utils_1 = require("./utils");
 const shopping_1 = require("./shopping");
+const mass_normalization_1 = require("./mass_normalization");
 // Helper type helper since we don't have all exact AST names matching from Ohm semantics yet
 // We'll trust the structure matches types.ts
 function processBlockItem(item, ctx, registry, secIngredients, secCookware) {
@@ -105,6 +106,13 @@ function processBlockItem(item, ctx, registry, secIngredients, secCookware) {
             const usage = (0, utils_1.createCleanUsage)(item, id);
             usage.qty = parseFloat(newVal.toFixed(2));
             usage.unit = inheritedUnit || 'g';
+            if (usage.unit) {
+                const norm = (0, mass_normalization_1.normalizeMass)(usage.qty, usage.unit);
+                if (norm) {
+                    usage.normalizedMass = norm.mass;
+                    usage.conversionMethod = norm.method;
+                }
+            }
             // Check Circular (Direct self-reference)
             if (targetId === id) {
                 usage.isCircular = true;

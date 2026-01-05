@@ -2,6 +2,7 @@
 import { getMass, quantityToMinutes } from './units';
 import { slugify, minifyQuantity, createCleanUsage, cleanObject } from './utils';
 import { generateShoppingList } from './shopping';
+import { normalizeMass } from './mass_normalization';
 import { 
     RecipeAST, SectionAST, IngredientAST, 
     Context, Registry, ProcessedSection, StepAST, CommentAST, 
@@ -107,8 +108,16 @@ export function processBlockItem(item: any, ctx: Context, registry: Registry, se
              
              const newVal = totalQty * (percent / 100);
              const usage = createCleanUsage(item, id);
-             usage.qty = parseFloat(newVal.toFixed(2)); 
-             usage.unit = inheritedUnit || 'g'; 
+              usage.qty = parseFloat(newVal.toFixed(2)); 
+              usage.unit = inheritedUnit || 'g'; 
+              
+              if (usage.unit) {
+                  const norm = normalizeMass(usage.qty, usage.unit);
+                  if (norm) {
+                      usage.normalizedMass = norm.mass;
+                      usage.conversionMethod = norm.method;
+                  }
+              } 
              
              // Check Circular (Direct self-reference)
              if (targetId === id) {

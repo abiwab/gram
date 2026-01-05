@@ -189,6 +189,10 @@ export interface Usage {
     type?: string; 
     options?: any[]; // For alternatives
     name?: string; // Optional name cache
+    // Mass Unification
+    normalizedMass?: number;
+    conversionMethod?: 'physical' | 'density' | 'unit_weight' | 'default' | 'explicit';
+    isEstimate?: boolean;
 }
 
 export interface ProcessedSection {

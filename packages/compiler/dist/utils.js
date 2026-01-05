@@ -34,6 +34,7 @@ const minifyQuantity = (q) => {
     return q;
 };
 exports.minifyQuantity = minifyQuantity;
+const mass_normalization_1 = require("./mass_normalization");
 const createCleanUsage = (item, id) => {
     const obj = { id };
     const qtyNode = item.quantity;
@@ -51,6 +52,22 @@ const createCleanUsage = (item, id) => {
         obj.qty = cleanQty;
     if (qtyNode && qtyNode.unit)
         obj.unit = qtyNode.unit;
+    // Mass Normalization Integration
+    if (obj.unit) {
+        let valForCalc = null;
+        if (typeof obj.qty === 'number')
+            valForCalc = obj.qty;
+        else if (obj.qty && typeof obj.qty === 'object' && typeof obj.qty.value === 'number') {
+            valForCalc = obj.qty.value; // Handles Range (avg) and Fraction
+        }
+        if (valForCalc !== null) {
+            const norm = (0, mass_normalization_1.normalizeMass)(valForCalc, obj.unit);
+            if (norm) {
+                obj.normalizedMass = norm.mass;
+                obj.conversionMethod = norm.method;
+            }
+        }
+    }
     if (item.modifiers && item.modifiers.length > 0) {
         const MODIFIER_MAP = {
             '?': 'optional',
