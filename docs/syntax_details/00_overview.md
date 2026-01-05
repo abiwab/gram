@@ -161,8 +161,19 @@ Supported units:
 - `s` (seconds).
 - *Note:* `m` or `minutes` will be automatically corrected to `min`.
 
+Timers can be **Synchronous** (blocking) or **Asynchronous** (background).
+
+#### Synchronous (Default)
+Stops the workflow. The cook must wait.
 ```gram
-Lay the potatoes on a #baking sheet{} and place into the #oven{}. Bake for ~{25min}.
+Bake for ~{25min}.
+```
+
+#### Asynchronous
+Runs in the background. The cook can proceed to the next step immediately. Use the `&` modifier.
+```gram
+Let the dough rest for ~{1h}&.
+Meanwhile, prepare the filling...
 ```
 
 Timers can have a name too:
