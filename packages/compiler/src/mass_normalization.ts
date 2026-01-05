@@ -73,7 +73,7 @@ export function normalizeMass(amount: number, unit: string, ingredientName?: str
     }
 
     // 3. Count -> Unit Weight
-    const COUNT_UNITS = ['unit', 'units', 'piece', 'pieces', 'ea', 'each'];
+    const COUNT_UNITS = ['unit', 'units', 'piece', 'pieces', 'ea', 'each', ''];
     
     if (COUNT_UNITS.includes(u)) {
         if (ingredientName) {

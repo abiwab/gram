@@ -25,6 +25,13 @@ if (res.sections && res.sections.length > 0) {
     ingredients.forEach(i => {
         console.log(`${i.id}: mass=${i.normalizedMass}, method=${i.conversionMethod}, est=${(i as any).isEstimate}`);
     });
+}
+
+if (res.shopping_list) {
+    console.log("Shopping List:");
+    res.shopping_list.forEach((i: any) => {
+        console.log(`- ${i.name || i.id}: mass=${i.normalizedMass}, method=${i.conversionMethod}, est=${i.isEstimate}`);
+    });
 } else {
-    console.log("No sections found.");
+    console.log("No shopping list.");
 }

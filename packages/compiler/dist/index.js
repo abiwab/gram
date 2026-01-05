@@ -510,7 +510,7 @@ function compile(ast) {
     }
     const resultPayload = processSections(ast.children, registry, densityOverrides);
     const sections = resultPayload.sections;
-    const shopping_list = (0, shopping_1.generateShoppingList)(sections, registry);
+    const shopping_list = (0, shopping_1.generateShoppingList)(sections, registry, densityOverrides);
     const globalCookware = [];
     sections.forEach(sec => {
         sec.cookware.forEach(cw => {

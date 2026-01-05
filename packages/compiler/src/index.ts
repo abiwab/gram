@@ -543,7 +543,7 @@ export function compile(ast: RecipeAST): CompilationResult {
 
     const resultPayload = processSections(ast.children, registry, densityOverrides);
     const sections = resultPayload.sections;
-    const shopping_list = generateShoppingList(sections, registry);
+    const shopping_list = generateShoppingList(sections, registry, densityOverrides);
     
     const globalCookware: Usage[] = [];
     sections.forEach(sec => {

@@ -9,6 +9,9 @@ interface ShoppingListItem {
     otherUnits?: Record<string, number>;
     variableParts?: string[];
     _hasSure?: boolean;
+    normalizedMass?: number;
+    isEstimate?: boolean;
+    conversionMethod?: string;
 }
 interface CompositeItem {
     type: 'composite';
@@ -18,5 +21,5 @@ interface CompositeItem {
     _subUsageMap: Map<string, number>;
     _usageAccumulator: Map<string, Partial<Usage>>;
 }
-export declare function generateShoppingList(sections: ProcessedSection[], registry: Registry): (ShoppingListItem | CompositeItem | Usage)[];
+export declare function generateShoppingList(sections: ProcessedSection[], registry: Registry, overrides?: Record<string, number>): (ShoppingListItem | CompositeItem | Usage)[];
 export {};

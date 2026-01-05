@@ -556,6 +556,20 @@ code {
   margin-left: 0.25em;
 }
 
+.preview-output .mass-badge {
+  display: inline-block;
+  font-size: 0.75em;
+  color: var(--muted-foreground);
+  background-color: var(--secondary);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  padding: 0 0.5em;
+  margin-left: 0.5em;
+  vertical-align: middle;
+  cursor: help;
+  line-height: 1.4;
+}
+
 .separator {
   list-style: none;
   border-block-end: 1px dotted var(--muted-foreground);

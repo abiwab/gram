@@ -57,7 +57,7 @@ function normalizeMass(amount, unit, ingredientName, overrides) {
         };
     }
     // 3. Count -> Unit Weight
-    const COUNT_UNITS = ['unit', 'units', 'piece', 'pieces', 'ea', 'each'];
+    const COUNT_UNITS = ['unit', 'units', 'piece', 'pieces', 'ea', 'each', ''];
     if (COUNT_UNITS.includes(u)) {
         if (ingredientName) {
             // Overrides for unit weight? 

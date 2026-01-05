@@ -543,17 +543,37 @@ function renderHTML(data) {
                 html += `    <li>\n`;
                 // formatIngredientHTML uses getQty(item) -> item.qty.
                 // Composite item has 'qty' property.
+                // BUT Composite Items might track mass in a custom way?
+                // Currently shopping list only exposes `qty` (UNITLESS max count) for composite parent.
+                // Mass isn't summed for composite parent usually (unless homogeneous?).
                 html += `      <strong>${formatIngredientHTML(item, registry)}</strong> (Composite):\n`;
                 html += `      <ul>\n`;
                 item.usage.forEach(child => {
-                    html += `        <li>${formatIngredientHTML(child, registry)}</li>\n`;
+                     html += `        <li>${formatIngredientHTML(child, registry)}</li>\n`;
                 });
                 html += `      </ul>\n`;
                 html += `    </li>\n`;
             } else if (item.display) {
                 html += `    <li>${escapeHtml(item.display)}</li>\n`;
             } else {
-                html += `    <li>${formatIngredientHTML(item, registry)}</li>\n`;
+                // Determine Mass Display for standard Shopping List Item
+                let massHtml = '';
+                if (item.normalizedMass) {
+                     const mass = Math.round(item.normalizedMass * 10) / 10;
+                     let display = `${mass}g`;
+                     let title = `Calculated Mass: ${mass}g\nMethod: ${item.conversionMethod}`;
+                     if (item.isEstimate) {
+                         display = `~${display}`;
+                         title += ` (Estimated)`;
+                     }
+                     if (item.conversionMethod === 'explicit') {
+                         display = `✍️ ${display}`;
+                         title += ` (User Override)`;
+                     }
+                     massHtml = ` <span class="mass-badge" title="${title}">${display}</span>`;
+                }
+
+                html += `    <li>${formatIngredientHTML(item, registry)}${massHtml}</li>\n`;
             }
         });
         html += `  </ul>\n`;
@@ -833,6 +853,28 @@ function formatIngredientHTML(item, registry) {
         if (formulaStr) {
              str += ` <span class="formula" title="Base Mass Used: ${item.formula ? item.formula.base_mass_used : ''}g">[${formulaStr}]</span>`;
         }
+    }
+
+    // Mass Badge
+    if (item.normalizedMass) {
+         // Round to max 1 decimal for display
+         const mass = Math.round(item.normalizedMass * 10) / 10;
+         let display = `${mass}g`;
+         let title = `Calculated Mass: ${mass}g\nMethod: ${item.conversionMethod}`;
+         
+         if (item.isEstimate) {
+             display = `~${display}`;
+             title += ` (Estimated)`;
+         }
+         
+         if (item.conversionMethod === 'explicit') {
+             display = `✍️ ${display}`;
+             title += ` (User Override)`;
+         } else if (item.conversionMethod === 'physical') {
+             title += ` (Exact)`;
+         }
+
+         str += ` <span class="mass-badge" title="${title}">${display}</span>`;
     }
     
     if (item.preparation) str += ` <span class="prep">(${escapeHtml(item.preparation)})</span>`;
