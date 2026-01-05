@@ -208,12 +208,18 @@ export interface NutritionMetrics {
         protein: number;
         carbs: number;
         fat: number;
+        sugar?: number;
+        fiber?: number;
+        salt?: number;
     };
     perPortion?: {
         calories: number;
         protein: number;
         carbs: number;
         fat: number;
+        sugar?: number;
+        fiber?: number;
+        salt?: number;
     };
     isEstimate: boolean;
     coverage: number; 

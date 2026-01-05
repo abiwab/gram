@@ -8,7 +8,10 @@ function calculateNutrition(ingredients, portions = 1) {
         calories: 0,
         protein: 0,
         carbs: 0,
-        fat: 0
+        fat: 0,
+        sugar: 0,
+        fiber: 0,
+        salt: 0
     };
     let metricsCount = 0;
     let knownCount = 0;
@@ -16,15 +19,9 @@ function calculateNutrition(ingredients, portions = 1) {
     const flatList = [];
     ingredients.forEach(item => {
         if (item.type === 'composite' && item.usage) {
-            // Use sub-ingredients for nutrition if possible, BUT mass calculation often runs on parent.
-            // Actually, if we have mass for parent (e.g. 6 Eggs), use parent.
-            // If parent has no data, try children.
-            // In shopping list we calculated both.
-            // For simplicity, let's treat composite parent as the ingredient if it has mass.
             flatList.push(item);
         }
         else if (item.type === 'alternative') {
-            // For alternatives, assume FIRST option (as per mass logic)
             if (item.options && item.options.length > 0) {
                 flatList.push(item.options[0]);
             }
@@ -34,11 +31,6 @@ function calculateNutrition(ingredients, portions = 1) {
         }
     });
     flatList.forEach(item => {
-        // We need normalized mass.
-        // If coming from shopping list, it might have it.
-        // If coming from raw Usage, we might need to calculate it.
-        // Let's re-calculate to be safe/independent, or accept pre-calculated.
-        // Try to get IDs
         const id = item.id;
         if (!id)
             return;
@@ -48,9 +40,8 @@ function calculateNutrition(ingredients, portions = 1) {
         // Try to calculate mass
         if (item.qty && (typeof item.qty === 'number' || item.qty.value)) {
             const val = typeof item.qty === 'number' ? item.qty : item.qty.value;
-            const unit = item.unit || 'unit'; // Default to unit if missing? Or should match normalizeMass default logic
-            // Note: normalizeMass handles 'unit' (count) logic now via overrides/DB
-            const norm = (0, mass_normalization_1.normalizeMass)(val, unit, item.name); // Using name or ID? normalizeMass uses name/slug internally
+            const unit = item.unit || 'unit';
+            const norm = (0, mass_normalization_1.normalizeMass)(val, unit, item.name);
             if (norm) {
                 mass = norm.mass;
                 isEst = norm.isEstimate;
@@ -65,10 +56,12 @@ function calculateNutrition(ingredients, portions = 1) {
                 total.protein += data.macros.protein * factor;
                 total.carbs += data.macros.carbs * factor;
                 total.fat += data.macros.fat * factor;
-            }
-            else {
-                // No macros found for this ingredient
-                // Even if we know the mass
+                if (data.macros.sugar !== undefined)
+                    total.sugar = (total.sugar || 0) + data.macros.sugar * factor;
+                if (data.macros.fiber !== undefined)
+                    total.fiber = (total.fiber || 0) + data.macros.fiber * factor;
+                if (data.macros.salt !== undefined)
+                    total.salt = (total.salt || 0) + data.macros.salt * factor;
             }
         }
     });
@@ -78,9 +71,15 @@ function calculateNutrition(ingredients, portions = 1) {
     total.protein = Math.round(total.protein * 10) / 10;
     total.carbs = Math.round(total.carbs * 10) / 10;
     total.fat = Math.round(total.fat * 10) / 10;
+    if (total.sugar !== undefined)
+        total.sugar = Math.round(total.sugar * 10) / 10;
+    if (total.fiber !== undefined)
+        total.fiber = Math.round(total.fiber * 10) / 10;
+    if (total.salt !== undefined)
+        total.salt = Math.round(total.salt * 100) / 100; // Salt often small
     const res = {
         total,
-        isEstimate: true, // Always an estimate
+        isEstimate: true,
         coverage
     };
     if (portions > 1) {
@@ -88,7 +87,10 @@ function calculateNutrition(ingredients, portions = 1) {
             calories: Math.round(total.calories / portions),
             protein: Math.round(total.protein / portions * 10) / 10,
             carbs: Math.round(total.carbs / portions * 10) / 10,
-            fat: Math.round(total.fat / portions * 10) / 10
+            fat: Math.round(total.fat / portions * 10) / 10,
+            sugar: total.sugar !== undefined ? Math.round(total.sugar / portions * 10) / 10 : 0,
+            fiber: total.fiber !== undefined ? Math.round(total.fiber / portions * 10) / 10 : 0,
+            salt: total.salt !== undefined ? Math.round(total.salt / portions * 100) / 100 : 0
         };
     }
     return res;

@@ -3,6 +3,9 @@ interface Macros {
     protein: number;
     carbs: number;
     fat: number;
+    sugar?: number;
+    fiber?: number;
+    salt?: number;
 }
 export interface NutritionMetrics {
     total: Macros;

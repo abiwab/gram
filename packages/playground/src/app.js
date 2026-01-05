@@ -507,35 +507,7 @@ function renderHTML(data) {
     }
     html += `</div>\n`;
 
-    // Nutrition Panel
-    if (data.metrics && data.metrics.nutrition && data.metrics.nutrition.total && data.metrics.nutrition.total.calories > 0) {
-        const nut = data.metrics.nutrition;
-        const total = nut.total;
-        
-        let portionText = '';
-        let portionVals = null;
-        if (nut.perPortion) {
-             portionText = ` (Per Portion)`;
-             portionVals = nut.perPortion;
-        }
-        
-        const displayVals = portionVals || total;
-        
-        const cal = Math.round(displayVals.calories);
-        const p = displayVals.protein;
-        const c = displayVals.carbs;
-        const f = displayVals.fat;
-        
-        html += `<div class="nutrition-panel">\n`;
-        html += `  <div class="nut-header">Nutrition <span class="est-badge" title="Coverage: ${Math.round(nut.coverage * 100)}%">Estimate</span>${portionText}</div>\n`;
-        html += `  <div class="nut-grid">\n`;
-        html += `    <div class="nut-item"><strong>${cal}</strong> <small>kcal</small></div>\n`;
-        html += `    <div class="nut-item"><span class="label">Protein</span> <strong>${p}g</strong></div>\n`;
-        html += `    <div class="nut-item"><span class="label">Carbs</span> <strong>${c}g</strong></div>\n`;
-        html += `    <div class="nut-item"><span class="label">Fat</span> <strong>${f}g</strong></div>\n`;
-        html += `  </div>\n`;
-        html += `</div>\n`;
-    }
+
 
     html += `<div class="recipe-meta-secondary">\n`;
     html += `<div class="metadata">\n`;
@@ -569,15 +541,7 @@ function renderHTML(data) {
     html += `</div>\n`; // End metadata
     html += `</div>\n\n`; // End secondary container
 
-    if (data.sections.length > 0 && data.sections[0].retro_planning) {
-        // Retro Planning
-        html += `<div class="retro-planning">\n`;
-        html += `  <h2>Retro Planning</h2>\n`;
-        html += `  <div class="mermaid">\n`;
-        html += escapeHtml(data.sections[0].retro_planning) + '\n';
-        html += `  </div>\n`;
-        html += `</div>\n\n`;
-    }
+
     
     // Shopping List
     if (data.shopping_list && data.shopping_list.length > 0) {
@@ -782,6 +746,43 @@ function renderHTML(data) {
             html += `    </ol>\n`;
             html += `  </section>\n`;
         });
+        html += `</div>\n`;
+    }
+
+    // Nutrition Panel (Moved to bottom)
+    if (data.metrics && data.metrics.nutrition && data.metrics.nutrition.total && data.metrics.nutrition.total.calories > 0) {
+        const nut = data.metrics.nutrition;
+        const total = nut.total;
+        
+        let portionText = '';
+        let portionVals = null;
+        if (nut.perPortion) {
+             portionText = ` (Per Portion)`;
+             portionVals = nut.perPortion;
+        }
+        
+        const displayVals = portionVals || total;
+        
+        const cal = Math.round(displayVals.calories);
+        const p = displayVals.protein;
+        const c = displayVals.carbs;
+        const f = displayVals.fat;
+
+        // Granular
+        const sugar = displayVals.sugar !== undefined ? displayVals.sugar : '-';
+        const fiber = displayVals.fiber !== undefined ? displayVals.fiber : '-';
+        const salt = displayVals.salt !== undefined ? displayVals.salt : '-';
+        
+        html += `<div class="nutrition-panel">\n`;
+        html += `  <div class="nut-header">Nutrition <span class="est-badge" title="Coverage: ${Math.round(nut.coverage * 100)}%">Estimate</span>${portionText}</div>\n`;
+        html += `  <div class="nut-grid">\n`;
+        html += `    <div class="nut-item"><strong>${cal}</strong> <small>kcal</small></div>\n`;
+        html += `    <div class="nut-item"><span class="label">Protein</span> <strong>${p}g</strong></div>\n`;
+        html += `    <div class="nut-item"><span class="label">Carbs</span> <strong>${c}g</strong><small style="font-size:0.6em; opacity:0.8; margin-top:2px;">(sugar: ${sugar}g)</small></div>\n`;
+        html += `    <div class="nut-item"><span class="label">Fat</span> <strong>${f}g</strong></div>\n`;
+        html += `    <div class="nut-item"><span class="label">Fiber</span> <strong>${fiber}g</strong></div>\n`;
+        html += `    <div class="nut-item"><span class="label">Salt</span> <strong>${salt}g</strong></div>\n`;
+        html += `  </div>\n`;
         html += `</div>\n`;
     }
     

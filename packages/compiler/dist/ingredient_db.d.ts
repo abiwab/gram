@@ -11,6 +11,9 @@ export interface IngredientData {
         protein: number;
         carbs: number;
         fat: number;
+        sugar?: number;
+        fiber?: number;
+        salt?: number;
     };
 }
 export declare const INGREDIENT_DB: Record<string, IngredientData>;
