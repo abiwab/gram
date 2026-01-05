@@ -50,9 +50,6 @@ export const createCleanUsage = (item: any, id: string, overrides?: Record<strin
     if (cleanQty !== undefined) obj.qty = cleanQty;
     if (qtyNode && qtyNode.unit) obj.unit = qtyNode.unit;
     
-    // helper to ensure we capture the name of the item
-    if (item.name) obj.name = item.name;
-
     // Mass Normalization Integration
     let valForCalc: number | null = null;
     if (typeof obj.qty === 'number') valForCalc = obj.qty;
@@ -62,7 +59,8 @@ export const createCleanUsage = (item: any, id: string, overrides?: Record<strin
 
     if (valForCalc !== null) {
          const unitForCalc = obj.unit || 'unit';
-         const norm = normalizeMass(valForCalc, unitForCalc, obj.name, overrides);
+         // Use item.name directly for lookup, do not attach to obj
+         const norm = normalizeMass(valForCalc, unitForCalc, item.name, overrides);
          if (norm) {
              obj.normalizedMass = norm.mass;
              obj.conversionMethod = norm.method;
