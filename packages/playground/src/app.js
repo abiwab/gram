@@ -533,37 +533,41 @@ function renderHTML(data) {
 
 
 
+    // Secondary Metrics (Mass, etc) & Metadata combined
     html += `<div class="recipe-meta-secondary">\n`;
-    html += `<div class="metadata">\n`;
-    html += `  <ul>\n`;
+    html += `<div class="metadata-grid">\n`;
 
-    // Secondary Metrics (Mass, etc)
-    if (data.metrics) {
-        if (data.metrics.totalMass) {
-             const mass = Math.round(data.metrics.totalMass);
-             let msg = `${mass}g`;
-             let title = "Total Recipe Input Mass";
-             if (data.metrics.massStatus === 'estimated') {
-                 msg = `~${mass}g`;
-                 title += " (Estimated)";
-             }
-             if (data.metrics.massStatus === 'incomplete') {
-                 msg = `${mass}g?`;
-                 title += " (Incomplete - missing some weights)";
-             }
-             html += `    <li class="metrics-item" title="${title}"><strong>⚖️ Total Mass</strong>: ${msg}</li>\n`;
-        }
+    if (data.metrics && data.metrics.totalMass) {
+         const mass = Math.round(data.metrics.totalMass);
+         let msg = `${mass}g`;
+         let title = "Total Recipe Input Mass";
+         if (data.metrics.massStatus === 'estimated') {
+             msg = `~${mass}g`;
+             title += " (Estimated)";
+         }
+         if (data.metrics.massStatus === 'incomplete') {
+             msg = `${mass}g?`;
+             title += " (Incomplete)";
+         }
+         html += `  <div class="meta-secondary-item" title="${title}">\n`;
+         html += `    <span class="label">Total Mass</span>\n`;
+         html += `    <span class="value">${msg}</span>\n`;
+         html += `  </div>\n`;
     }
 
     if (data.meta) {
         for (const [k, v] of Object.entries(data.meta)) {
-            if (k !== 'title') html += `    <li><strong>${escapeHtml(k)}</strong>: ${escapeHtml(v)}</li>\n`;
+            if (k !== 'title') {
+                html += `  <div class="meta-secondary-item">\n`;
+                html += `    <span class="label">${escapeHtml(k)}</span>\n`;
+                html += `    <span class="value">${escapeHtml(v)}</span>\n`;
+                html += `  </div>\n`;
+            }
         }
     }
     
-    html += `  </ul>\n`;
-    html += `</div>\n`; // End metadata
-    html += `</div>\n\n`; // End secondary container
+    html += `</div>\n`;
+    html += `</div>\n\n`;
 
 
     

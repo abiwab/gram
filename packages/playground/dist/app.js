@@ -416,12 +416,16 @@ NOTE: as of Ohm v16, there is no default action for iteration nodes \u2014 see `
 `,n+=` </div>
 `),n+=`</div>
 `,n+=`<div class="recipe-meta-secondary">
-`,n+=`<div class="metadata">
-`,n+=`  <ul>
-`,t.metrics&&t.metrics.totalMass){let r=Math.round(t.metrics.totalMass),s=`${r}g`,i="Total Recipe Input Mass";t.metrics.massStatus==="estimated"&&(s=`~${r}g`,i+=" (Estimated)"),t.metrics.massStatus==="incomplete"&&(s=`${r}g?`,i+=" (Incomplete - missing some weights)"),n+=`    <li class="metrics-item" title="${i}"><strong>\u2696\uFE0F Total Mass</strong>: ${s}</li>
-`}if(t.meta)for(let[r,s]of Object.entries(t.meta))r!=="title"&&(n+=`    <li><strong>${A(r)}</strong>: ${A(s)}</li>
-`);if(n+=`  </ul>
-`,n+=`</div>
+`,n+=`<div class="metadata-grid">
+`,t.metrics&&t.metrics.totalMass){let r=Math.round(t.metrics.totalMass),s=`${r}g`,i="Total Recipe Input Mass";t.metrics.massStatus==="estimated"&&(s=`~${r}g`,i+=" (Estimated)"),t.metrics.massStatus==="incomplete"&&(s=`${r}g?`,i+=" (Incomplete)"),n+=`  <div class="meta-secondary-item" title="${i}">
+`,n+=`    <span class="label">Total Mass</span>
+`,n+=`    <span class="value">${s}</span>
+`,n+=`  </div>
+`}if(t.meta)for(let[r,s]of Object.entries(t.meta))r!=="title"&&(n+=`  <div class="meta-secondary-item">
+`,n+=`    <span class="label">${A(r)}</span>
+`,n+=`    <span class="value">${A(s)}</span>
+`,n+=`  </div>
+`);if(n+=`</div>
 `,n+=`</div>
 
 `,t.shopping_list&&t.shopping_list.length>0&&(n+=`<div class="shopping-list">

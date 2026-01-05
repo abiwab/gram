@@ -620,9 +620,36 @@ code {
   margin-left: 0.5em;
 }
 
-.separator {
-  list-style: none;
-  border-block-end: 1px dotted var(--muted-foreground);
+/* Secondary Metadata */
+.preview-output .metadata-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.preview-output .meta-secondary-item {
+  background: var(--secondary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  font-size: 0.85em;
+}
+
+.preview-output .meta-secondary-item .label {
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  font-size: 0.8em;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.preview-output .meta-secondary-item .value {
+  color: var(--foreground);
+  font-weight: 500;
 }
 
 /* =========================================
