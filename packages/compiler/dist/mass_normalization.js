@@ -60,10 +60,15 @@ function normalizeMass(amount, unit, ingredientName, overrides) {
     const COUNT_UNITS = ['unit', 'units', 'piece', 'pieces', 'ea', 'each', ''];
     if (COUNT_UNITS.includes(u)) {
         if (ingredientName) {
-            // Overrides for unit weight? 
-            // The task specifically mentioned "density overrides".
-            // But logical to allow unit weight overrides too if we wanted.
-            // For now, only DB lookup.
+            // Check overrides first
+            if (overrides && overrides[slugify(ingredientName)]) {
+                const unitWt = overrides[slugify(ingredientName)];
+                return {
+                    mass: amount * unitWt,
+                    method: 'explicit',
+                    isEstimate: false // User defined rule -> considered precise for this recipe
+                };
+            }
             const data = (0, ingredient_db_1.getIngredientData)(ingredientName);
             if (data && data.unit_weight) {
                 return { mass: amount * data.unit_weight, method: 'unit_weight', isEstimate: true };
