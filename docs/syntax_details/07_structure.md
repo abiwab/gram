@@ -11,6 +11,9 @@ The file must start with a YAML block delimited by `---`.
 title: My Recipe
 author: Chef
 tags: [dessert, easy]
+densities:
+  - flour: 0.6
+  - egg: 55
 ---
 ```
 

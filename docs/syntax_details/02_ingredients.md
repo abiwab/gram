@@ -22,6 +22,8 @@ The quantity is flexible:
 *   **Fraction**: `@sugar{1/2 cup}`
 *   **Range**: `@apples{3-4}`
 
+> **Mass Normalization**: GRAM automatically calculates the mass (in grams) for volumes and units if possible. You can override densities in the metadata. See [Mass Unification](97_mass_unification.md).
+
 ## Modifiers (Flags)
 
 Modifiers change the behavior of the ingredient. They are placed right after the `@`.
