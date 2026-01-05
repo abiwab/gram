@@ -103,14 +103,15 @@ function processBlockItem(item, ctx, registry, secIngredients, secCookware) {
                 }
             }
             const newVal = totalQty * (percent / 100);
-            const usage = (0, utils_1.createCleanUsage)(item, id);
+            const usage = (0, utils_1.createCleanUsage)(item, id, ctx.densityOverrides);
             usage.qty = parseFloat(newVal.toFixed(2));
             usage.unit = inheritedUnit || 'g';
             if (usage.unit) {
-                const norm = (0, mass_normalization_1.normalizeMass)(usage.qty, usage.unit);
+                const norm = (0, mass_normalization_1.normalizeMass)(usage.qty, usage.unit, usage.name || item.name, ctx.densityOverrides);
                 if (norm) {
                     usage.normalizedMass = norm.mass;
                     usage.conversionMethod = norm.method;
+                    usage.isEstimate = norm.isEstimate;
                 }
             }
             // Check Circular (Direct self-reference)
@@ -133,7 +134,7 @@ function processBlockItem(item, ctx, registry, secIngredients, secCookware) {
             secIngredients.push(usage);
             return usage;
         }
-        const usage = (0, utils_1.createCleanUsage)(item, id);
+        const usage = (0, utils_1.createCleanUsage)(item, id, ctx.densityOverrides);
         if (item.modifiers && item.modifiers.includes('&')) {
             if (!ctx.seenNames.has(item.name)) {
                 ctx.warnings.push({ code: 'UNDEFINED_REFERENCE', message: `Reference to undefined ingredient '@&${item.name}'.`, item: item.name });
@@ -154,7 +155,7 @@ function processBlockItem(item, ctx, registry, secIngredients, secCookware) {
         if (!registry.cookware.has(id)) {
             registry.cookware.set(id, { id, name: item.name });
         }
-        const usage = (0, utils_1.createCleanUsage)(item, id);
+        const usage = (0, utils_1.createCleanUsage)(item, id, ctx.densityOverrides);
         secCookware.push(usage);
         return usage;
     }
@@ -266,7 +267,7 @@ function processBlockItem(item, ctx, registry, secIngredients, secCookware) {
 }
 // Scheduling State (Global mutable for straightforward linear processing across sections)
 // In a real app we might want to return this state, but for now we assume linear sections.
-function processSections(astChildren, registry) {
+function processSections(astChildren, registry, overrides) {
     const ctx = {
         warnings: registry.warnings,
         intermediateDecl: null,
@@ -274,7 +275,8 @@ function processSections(astChildren, registry) {
         definedIntermediates: new Set(),
         usedIntermediates: new Set(),
         variableWeights: new Map(),
-        globalScopes: new Map() // Check Scope Conflicts
+        globalScopes: new Map(), // Check Scope Conflicts
+        densityOverrides: overrides || {}
     };
     const sections = [];
     let blocksToProcess = astChildren;
@@ -489,7 +491,24 @@ function compile(ast) {
         cookware: new Map(),
         warnings: []
     };
-    const resultPayload = processSections(ast.children, registry);
+    // Parse Density Overrides from Metadata
+    const densityOverrides = {};
+    if (ast.meta && ast.meta.densities) {
+        const d = ast.meta.densities;
+        const list = Array.isArray(d) ? d : [d];
+        list.forEach((entry) => {
+            // Expected format: "ingredient: density" e.g. "flour: 0.6"
+            const parts = entry.split(':');
+            if (parts.length === 2) {
+                const name = (0, utils_1.slugify)(parts[0]);
+                const density = parseFloat(parts[1].trim());
+                if (!isNaN(density)) {
+                    densityOverrides[name] = density;
+                }
+            }
+        });
+    }
+    const resultPayload = processSections(ast.children, registry, densityOverrides);
     const sections = resultPayload.sections;
     const shopping_list = (0, shopping_1.generateShoppingList)(sections, registry);
     const globalCookware = [];

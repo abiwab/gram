@@ -107,15 +107,16 @@ export function processBlockItem(item: any, ctx: Context, registry: Registry, se
              }
              
              const newVal = totalQty * (percent / 100);
-             const usage = createCleanUsage(item, id);
+             const usage = createCleanUsage(item, id, ctx.densityOverrides);
               usage.qty = parseFloat(newVal.toFixed(2)); 
               usage.unit = inheritedUnit || 'g'; 
               
               if (usage.unit) {
-                  const norm = normalizeMass(usage.qty, usage.unit);
+                  const norm = normalizeMass(usage.qty, usage.unit, usage.name || item.name, ctx.densityOverrides);
                   if (norm) {
                       usage.normalizedMass = norm.mass;
                       usage.conversionMethod = norm.method;
+                      (usage as any).isEstimate = norm.isEstimate;
                   }
               } 
              
@@ -143,7 +144,7 @@ export function processBlockItem(item: any, ctx: Context, registry: Registry, se
              return usage;
         }
 
-        const usage = createCleanUsage(item, id);
+        const usage = createCleanUsage(item, id, ctx.densityOverrides);
         if (item.modifiers && item.modifiers.includes('&')) {
              if (!ctx.seenNames.has(item.name)) {
                  ctx.warnings.push({ code: 'UNDEFINED_REFERENCE', message: `Reference to undefined ingredient '@&${item.name}'.`, item: item.name });
@@ -165,7 +166,7 @@ export function processBlockItem(item: any, ctx: Context, registry: Registry, se
         if (!registry.cookware.has(id)) {
             registry.cookware.set(id, { id, name: item.name });
         }
-        const usage = createCleanUsage(item, id);
+        const usage = createCleanUsage(item, id, ctx.densityOverrides);
         secCookware.push(usage);
         return usage;
     }
@@ -282,7 +283,7 @@ export function processBlockItem(item: any, ctx: Context, registry: Registry, se
 // Scheduling State (Global mutable for straightforward linear processing across sections)
 // In a real app we might want to return this state, but for now we assume linear sections.
 
-function processSections(astChildren: any[], registry: Registry): { sections: ProcessedSection[], metrics: { totalTime: number, activeTime: number } } {
+function processSections(astChildren: any[], registry: Registry, overrides?: Record<string, number>): { sections: ProcessedSection[], metrics: { totalTime: number, activeTime: number } } {
     const ctx: Context = {
         warnings: registry.warnings,
         intermediateDecl: null,
@@ -290,7 +291,8 @@ function processSections(astChildren: any[], registry: Registry): { sections: Pr
         definedIntermediates: new Set(),
         usedIntermediates: new Set(),
         variableWeights: new Map(),
-        globalScopes: new Map() // Check Scope Conflicts
+        globalScopes: new Map(), // Check Scope Conflicts
+        densityOverrides: overrides || {}
     };
 
     const sections: ProcessedSection[] = [];
@@ -521,7 +523,25 @@ export function compile(ast: RecipeAST): CompilationResult {
         warnings: []
     };
 
-    const resultPayload = processSections(ast.children, registry);
+    // Parse Density Overrides from Metadata
+    const densityOverrides: Record<string, number> = {};
+    if (ast.meta && ast.meta.densities) {
+        const d = ast.meta.densities;
+        const list = Array.isArray(d) ? d : [d];
+        list.forEach((entry: string) => {
+            // Expected format: "ingredient: density" e.g. "flour: 0.6"
+            const parts = entry.split(':');
+            if (parts.length === 2) {
+                const name = slugify(parts[0]);
+                const density = parseFloat(parts[1].trim());
+                if (!isNaN(density)) {
+                    densityOverrides[name] = density;
+                }
+            }
+        });
+    }
+
+    const resultPayload = processSections(ast.children, registry, densityOverrides);
     const sections = resultPayload.sections;
     const shopping_list = generateShoppingList(sections, registry);
     

@@ -139,6 +139,7 @@ export interface Context {
     usedIntermediates: Set<string>;
     variableWeights: Map<string, VariableWeight>;
     globalScopes: Map<string, string>;
+    densityOverrides: Record<string, number>;
 }
 export interface Usage {
     id: string;

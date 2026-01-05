@@ -33,7 +33,7 @@ export const minifyQuantity = (q: any): number | QuantityValueAST | undefined =>
 
 import { normalizeMass } from './mass_normalization';
 
-export const createCleanUsage = (item: any, id: string): Usage => {
+export const createCleanUsage = (item: any, id: string, overrides?: Record<string, number>): Usage => {
     const obj: Usage = { id };
     const qtyNode = item.quantity;
     let cleanQty: any = undefined;
@@ -49,21 +49,24 @@ export const createCleanUsage = (item: any, id: string): Usage => {
     
     if (cleanQty !== undefined) obj.qty = cleanQty;
     if (qtyNode && qtyNode.unit) obj.unit = qtyNode.unit;
+    
+    // helper to ensure we capture the name of the item
+    if (item.name) obj.name = item.name;
 
     // Mass Normalization Integration
-    if (obj.unit) {
-         let valForCalc: number | null = null;
-         if (typeof obj.qty === 'number') valForCalc = obj.qty;
-         else if (obj.qty && typeof obj.qty === 'object' && typeof (obj.qty as any).value === 'number') {
-             valForCalc = (obj.qty as any).value; // Handles Range (avg) and Fraction
-         }
+    let valForCalc: number | null = null;
+    if (typeof obj.qty === 'number') valForCalc = obj.qty;
+    else if (obj.qty && typeof obj.qty === 'object' && typeof (obj.qty as any).value === 'number') {
+         valForCalc = (obj.qty as any).value; // Handles Range (avg) and Fraction
+    }
 
-         if (valForCalc !== null) {
-             const norm = normalizeMass(valForCalc, obj.unit);
-             if (norm) {
-                 obj.normalizedMass = norm.mass;
-                 obj.conversionMethod = norm.method;
-             }
+    if (valForCalc !== null) {
+         const unitForCalc = obj.unit || 'unit';
+         const norm = normalizeMass(valForCalc, unitForCalc, obj.name, overrides);
+         if (norm) {
+             obj.normalizedMass = norm.mass;
+             obj.conversionMethod = norm.method;
+             obj.isEstimate = norm.isEstimate;
          }
     }
 

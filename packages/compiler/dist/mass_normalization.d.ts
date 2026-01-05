@@ -5,7 +5,9 @@
  */
 interface ConversionResult {
     mass: number;
-    method: 'physical';
+    method: 'physical' | 'density' | 'unit_weight' | 'default' | 'explicit';
 }
-export declare function normalizeMass(amount: number, unit: string): ConversionResult | null;
+export declare function normalizeMass(amount: number, unit: string, ingredientName?: string, overrides?: Record<string, number>): ConversionResult & {
+    isEstimate: boolean;
+} | null;
 export {};
