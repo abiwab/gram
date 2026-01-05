@@ -382,6 +382,9 @@ function processSections(astChildren, registry) {
                     },
                     backgroundTasks: stepAsyncTasks
                 };
+                if (block.action) {
+                    stepObj.action = block.action;
+                }
                 cookCursor += localActiveTime;
                 globalActiveTime += localActiveTime;
                 // Mass Calculation Stuff (Preserved)

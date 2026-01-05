@@ -408,6 +408,10 @@ function processSections(astChildren: any[], registry: Registry): { sections: Pr
                      backgroundTasks: stepAsyncTasks
                  };
 
+                  if (block.action) {
+                      (stepObj as any).action = block.action;
+                  }
+
                  cookCursor += localActiveTime;
                  globalActiveTime += localActiveTime;
 

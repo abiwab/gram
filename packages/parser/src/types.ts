@@ -203,6 +203,7 @@ export interface ProcessedSection {
 export interface ProcessedStep {
     type: 'step';
     value: string; // The reconstructed text of the step
+    action?: string; // The explicit action verb (e.g. "Mix")
     // Gantt Data
     timings: {
         start: number;       // Global start time (in minutes, relative to T=0)
