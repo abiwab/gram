@@ -511,6 +511,48 @@ code {
 }
 
 /* Metadata & Sections */
+/* Metadata & Sections */
+.preview-output .recipe-meta {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.preview-output .meta-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.preview-output .meta-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.preview-output .meta-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.preview-output .meta-label {
+  font-size: 0.7em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted-foreground);
+  font-weight: 600;
+}
+
+.preview-output .meta-value {
+  font-size: 1.1em;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
 .preview-output .metadata {
   background: var(--secondary);
   padding: 1rem;
@@ -574,7 +616,6 @@ code {
 .preview-output .gross-mass {
   font-size: 0.75em;
   color: var(--warning); 
-  /* Assuming warning color exists, otherwise using muted but italic */
   font-style: italic;
   margin-left: 0.5em;
 }

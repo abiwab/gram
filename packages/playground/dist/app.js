@@ -393,9 +393,27 @@ NOTE: as of Ohm v16, there is no default action for iteration nodes \u2014 see `
 `})),n}function re(t,e){let n=e.ingredients[t.id],r=n?n.name:t.id;t.alias&&(r=t.alias);let s=Oe(t),i=t.formula?`${t.formula.percent}% of ${t.formula.target}`:null;if(t.formula&&t.formula.is_partial)r+=` (${i} \u26A0\uFE0F)`;else{let l=[];if(s){let o=s.text||s.value;t.unit&&(o+=` ${t.unit}`),l.push(o)}t.variable_entries&&t.variable_entries.length>0&&l.push(...t.variable_entries),l.length>0&&(r+=` (${l.join(" + ")})`),i&&(r+=` [${i}]`)}return t.preparation&&(r+=` (${t.preparation})`),t.modifiers&&t.modifiers.includes("optional")&&(r+=" (optional)"),r}function Se(t,e){let n=e.cookware[t.id],r=n?n.name:t.id;t.alias&&(r=t.alias);let s=Oe(t);return s&&(r+=` (${s.value})`),r}function tt(){let t=se.value;try{let e=(0,Pn.getAST)(t),n=(0,$n.compile)(e),r="";Y==="json"?(r=JSON.stringify(n,null,2),n.warnings&&n.warnings.length>0?Xe(n.warnings):Pe()):Y==="ast"?(r=Ft(e),Pe()):Y==="markdown"?(r=vs(n),n.warnings&&n.warnings.length>0?Xe(n.warnings):Pe()):Y==="json-tree"?(r=bs(n),n.warnings&&n.warnings.length>0?Xe(n.warnings):Pe()):Y==="preview"&&(r=Is(n),n.warnings&&n.warnings.length>0?Xe(n.warnings):Pe());let s=document.getElementById("preview-output"),i=document.getElementById("output").parentElement;if(Y==="preview"||Y==="json-tree"){if(i.style.display="none",s.style.display="block",s.innerHTML=r,Y==="json-tree"){let a=s.querySelector("#btn-expand-all"),l=s.querySelector("#btn-collapse-all");a&&l&&(a.addEventListener("click",()=>{s.querySelectorAll(".json-node").forEach(c=>{c.classList.remove("collapsed");let u=c.querySelector(".json-toggle");u&&(u.textContent="\u25BC")})}),l.addEventListener("click",()=>{s.querySelectorAll(".json-node").forEach((c,u)=>{if(u===0)return;c.classList.add("collapsed");let p=c.querySelector(".json-toggle");p&&(p.textContent="\u25B6")})})),s.querySelectorAll(".json-header").forEach(d=>{d.addEventListener("click",c=>{c.stopPropagation();let u=d.parentElement;u.classList.toggle("collapsed");let p=d.querySelector(".json-toggle");p&&(u.classList.contains("collapsed")?p.textContent="\u25B6":p.textContent="\u25BC")})})}}else i.style.display="block",i.style.removeProperty("display"),s.style.display="none",Y==="json"?(Z.textContent=r,Z.className="language-json"):Y==="ast"?(Z.textContent=r,Z.className="language-lisp"):(Z.textContent=r,Z.className="language-markdown"),Z.removeAttribute("data-highlighted"),hljs.highlightElement(Z),hljs.lineNumbersBlock(Z);Ye.textContent="Valid",Ye.className="status success"}catch(e){Z.textContent=e.message,Z.textContent=e.message,Ye.textContent="Error",Ye.className="status error"}}function Is(t){let e=t.registry||{ingredients:{},cookware:{}},n="";if(t.title&&(n+=`<h1>${A(t.title)}</h1>
 
 `),n+=`<div class="recipe-meta">
-`,t.metrics&&(n+=` <div class="meta-item"><strong>Total Time:</strong> ${Ee(t.metrics.totalTime)}</div>
-`,n+=` <div class="meta-item"><strong>Active Time:</strong> ${Ee(t.metrics.activeTime)}</div>
-`,n+=` <div class="meta-item" title="Based on ingredient count and complexity"><strong>Prep Time:</strong> ${Ee(t.metrics.preparationTime)} <span class="est">(est.)</span></div>
+`,t.metrics&&(n+=` <div class="meta-item">
+`,n+=`   <div class="meta-icon">\u23F1\uFE0F</div>
+`,n+=`   <div class="meta-content">
+`,n+=`     <span class="meta-label">Total Time</span>
+`,n+=`     <span class="meta-value">${Ee(t.metrics.totalTime)}</span>
+`,n+=`   </div>
+`,n+=` </div>
+`,n+=` <div class="meta-item">
+`,n+=`   <div class="meta-icon">\u{1F525}</div>
+`,n+=`   <div class="meta-content">
+`,n+=`     <span class="meta-label">Active Time</span>
+`,n+=`     <span class="meta-value">${Ee(t.metrics.activeTime)}</span>
+`,n+=`   </div>
+`,n+=` </div>
+`,n+=` <div class="meta-item" title="Based on ingredient count and complexity">
+`,n+=`   <div class="meta-icon">\u{1F52A}</div>
+`,n+=`   <div class="meta-content">
+`,n+=`     <span class="meta-label">Prep Time</span>
+`,n+=`     <span class="meta-value">${Ee(t.metrics.preparationTime)} <span class="est">(est.)</span></span>
+`,n+=`   </div>
+`,n+=` </div>
 `),n+=`</div>
 `,n+=`<div class="recipe-meta-secondary">
 `,n+=`<div class="metadata">

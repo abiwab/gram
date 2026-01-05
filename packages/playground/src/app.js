@@ -499,11 +499,35 @@ function renderHTML(data) {
     }
     
     // Display Metadata
+    // Display Metadata
     html += `<div class="recipe-meta">\n`;
     if (data.metrics) {
-        html += ` <div class="meta-item"><strong>Total Time:</strong> ${formatDuration(data.metrics.totalTime)}</div>\n`;
-        html += ` <div class="meta-item"><strong>Active Time:</strong> ${formatDuration(data.metrics.activeTime)}</div>\n`;
-        html += ` <div class="meta-item" title="Based on ingredient count and complexity"><strong>Prep Time:</strong> ${formatDuration(data.metrics.preparationTime)} <span class="est">(est.)</span></div>\n`;
+        // Total Time
+        html += ` <div class="meta-item">\n`;
+        html += `   <div class="meta-icon">⏱️</div>\n`;
+        html += `   <div class="meta-content">\n`;
+        html += `     <span class="meta-label">Total Time</span>\n`;
+        html += `     <span class="meta-value">${formatDuration(data.metrics.totalTime)}</span>\n`;
+        html += `   </div>\n`;
+        html += ` </div>\n`;
+
+        // Active Time
+        html += ` <div class="meta-item">\n`;
+        html += `   <div class="meta-icon">🔥</div>\n`;
+        html += `   <div class="meta-content">\n`;
+        html += `     <span class="meta-label">Active Time</span>\n`;
+        html += `     <span class="meta-value">${formatDuration(data.metrics.activeTime)}</span>\n`;
+        html += `   </div>\n`;
+        html += ` </div>\n`;
+
+        // Prep Time
+        html += ` <div class="meta-item" title="Based on ingredient count and complexity">\n`;
+        html += `   <div class="meta-icon">🔪</div>\n`;
+        html += `   <div class="meta-content">\n`;
+        html += `     <span class="meta-label">Prep Time</span>\n`;
+        html += `     <span class="meta-value">${formatDuration(data.metrics.preparationTime)} <span class="est">(est.)</span></span>\n`;
+        html += `   </div>\n`;
+        html += ` </div>\n`;
     }
     html += `</div>\n`;
 
