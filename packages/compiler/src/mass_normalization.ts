@@ -53,25 +53,24 @@ export function normalizeMass(amount: number, unit: string, ingredientName?: str
         };
     }
 
-    // 3. Count -> Unit Weight
-    const COUNT_UNITS = ['unit', 'units', 'piece', 'pieces', 'ea', 'each', ''];
-    
-    if (COUNT_UNITS.includes(u)) {
-        if (ingredientName) {
-            // Check overrides first
-            if (overrides && overrides[slugify(ingredientName)]) {
-                const unitWt = overrides[slugify(ingredientName)];
-                return { 
-                    mass: amount * unitWt, 
-                    method: 'explicit', 
-                    isEstimate: false // User defined rule -> considered precise for this recipe
-                };
-            }
+    // 3. Fallback: Treat unknown units as Count/Unit units
+    // e.g. "clove", "head", "stick", "slice" -> treated as "1 unit" multiplier
+    if (ingredientName) {
+        // Check overrides first
+        if (overrides && overrides[slugify(ingredientName)]) {
+            const unitWt = overrides[slugify(ingredientName)];
+            return { 
+                mass: amount * unitWt, 
+                method: 'explicit', 
+                // Careful: If the override was meant for density (g/ml), this might be ambiguous?
+                // But generally overrides for non-volume things imply unit weight.
+                isEstimate: false 
+            };
+        }
 
-            const data = getIngredientData(ingredientName);
-            if (data && data.unit_weight) {
-                return { mass: amount * data.unit_weight, method: 'unit_weight', isEstimate: true };
-            }
+        const data = getIngredientData(ingredientName);
+        if (data && data.unit_weight) {
+            return { mass: amount * data.unit_weight, method: 'unit_weight', isEstimate: true };
         }
     }
 

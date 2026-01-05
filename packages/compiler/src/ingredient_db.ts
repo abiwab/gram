@@ -37,17 +37,47 @@ const RAW_ENTRIES: Array<{ names: string[], data: IngredientData }> = [
 
     // Produce
     { names: ['egg', 'eggs'], data: { density: 1.03, unit_weight: 55 } },
-    { names: ['egg yolk', 'egg yolks'], data: { density: 1.03, unit_weight: 18 } },
-    { names: ['egg white', 'egg whites'], data: { density: 1.03, unit_weight: 33 } },
+    { names: ['egg yolk', 'egg yolks', 'yolk', 'yolks'], data: { density: 1.03, unit_weight: 18 } },
+    { names: ['egg white', 'egg whites', 'white', 'whites'], data: { density: 1.03, unit_weight: 33 } },
     { names: ['lemon', 'lemons'], data: { density: 1.0, unit_weight: 120 } },
+    { names: ['lemon juice', 'juice'], data: { density: 1.04, unit_weight: 45 } },  // ~1 lemon yield
+    { names: ['lemon zest', 'zest'], data: { density: 0.5, unit_weight: 3 } }, // ~1 lemon yield
     { names: ['lime', 'limes'], data: { density: 1.0, unit_weight: 60 } },
-    { names: ['onion', 'onions'], data: { density: 0.7, unit_weight: 150 } },
+    { names: ['onion', 'onions', 'yellow onion'], data: { density: 0.7, unit_weight: 150 } },
+    { names: ['red onion', 'red onions'], data: { density: 0.7, unit_weight: 150 } },
     { names: ['garlic', 'garlic clove', 'garlic cloves'], data: { density: 0.6, unit_weight: 5 } },
     { names: ['carrot', 'carrots'], data: { density: 0.7, unit_weight: 100 } },
-    { names: ['potato', 'potatoes'], data: { density: 0.77, unit_weight: 200 } },
+    { names: ['potato', 'potatoes', 'russet potato'], data: { density: 0.77, unit_weight: 200 } },
     { names: ['apple', 'apples'], data: { density: 0.6, unit_weight: 180 } },
     { names: ['banana', 'bananas'], data: { density: 0.9, unit_weight: 120 } },
     { names: ['tomato', 'tomatoes'], data: { density: 0.95, unit_weight: 120 } },
+    { names: ['canned tomatoes', 'canned tomato'], data: { density: 1.1 } }, // denser
+    { names: ['bell pepper', 'red bell pepper', 'green bell pepper'], data: { density: 0.5, unit_weight: 150 } },
+    { names: ['chili', 'chili pepper', 'espelette pepper'], data: { density: 0.5, unit_weight: 15 } },
+    { names: ['ginger'], data: { density: 0.9, unit_weight: 30 } }, // ~2 inch piece
+    { names: ['spinach'], data: { density: 0.1, unit_weight: 300 } }, // bunch
+
+    // Meat & Protein
+    { names: ['chicken', 'chicken breast'], data: { density: 1.05, unit_weight: 200 } },
+    { names: ['chicken thigh', 'chicken thighs'], data: { density: 1.05, unit_weight: 120 } }, // boneless skinless
+    { names: ['beef', 'ground beef', 'steak'], data: { density: 1.05 } },
+    { names: ['pork', 'pork chop'], data: { density: 1.05, unit_weight: 150 } },
+    { names: ['bacon'], data: { density: 0.5 } }, // Rendered? Fried? Raw density ~1.
+    { names: ['tofu'], data: { density: 0.95 } },
+
+    // Spices (Ground) - Average density ~0.5 g/ml
+    { names: ['pepper', 'black pepper', 'ground pepper'], data: { density: 0.5 } },
+    { names: ['salt', 'sea salt'], data: { density: 1.2 } },
+    { names: ['cinnamon'], data: { density: 0.55 } },
+    { names: ['paprika'], data: { density: 0.45 } },
+    { names: ['cumin'], data: { density: 0.45 } },
+    { names: ['turmeric'], data: { density: 0.6 } },
+    
+    // Stocks & Sauces
+    { names: ['stock', 'chicken stock', 'beef stock', 'vegetable stock', 'broth'], data: { density: 1.01 } },
+    { names: ['mayonnaise'], data: { density: 0.92 } },
+    { names: ['mustard'], data: { density: 1.05 } },
+    { names: ['ketchup'], data: { density: 1.15 } },
 
     // Grains
     { names: ['rice'], data: { density: 0.85 } },
