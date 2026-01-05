@@ -10,12 +10,11 @@ This process, called **NormalizeMass**, follows a strict priority order:
 
 1.  **Physical Mass**: If the unit is already a weight (`g`, `kg`, `mg`, `oz`, `lb`), it is simply converted to grams. This is considered **Precise**.
 2.  **Explicit Override**: If you provided a specific density override in the recipe metadata (see below), it is used to convert volume to mass. This is considered **Explicit**.
-3.  **Ingredient Database**: The compiler looks up the ingredient in its internal database (Physical constants).
-    *   **Unit Weight**: If the ingredient is a Count (e.g., `1 egg`), it uses the average weight (e.g., `55g`). This is considered **Estimated** (`~`).
-    *   **Density**: If the ingredient is a Volume (e.g., `100ml water`), it uses the density (e.g., `1.0`). This is considered **Estimated** (`~`).
-4.  **Default Fallback**: If no specific data is found:
-    *   `1 ml` is assumed to be `1 g` (Water density).
-    *   Other units might fail to convert.
+3.  **Ingredient Database (Density)**: If the unit is a known Volume (`ml`, `cup`, `tbsp`...), the compiler looks up the ingredient's density. If found, it converts volume to mass. This is considered **Estimated** (`~`).
+4.  **Count / Fallback**: If the unit is **not** a known Mass or Volume (e.g., `unit`, `piece`, or custom units like `clove`, `head`...), it acts as a multiplier. The compiler looks for a **Unit Weight** in the DB or Overrides.
+    *   Example: `@garlic{3 cloves}` -> Looks for unit weight of garlic (5g) -> 15g.
+    *   This is considered **Estimated** (`~`).
+5.  **Default Fallback**: If no specific data is found for volume conversions, `1 ml` is assumed to be `1 g` (Water density). Other unknown units without a unit weight result in failure (`incomplete`).
 
 ## Alternatives Logic
 
