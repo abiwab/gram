@@ -17,6 +17,11 @@ This process, called **NormalizeMass**, follows a strict priority order:
     *   `1 ml` is assumed to be `1 g` (Water density).
     *   Other units might fail to convert.
 
+## Alternatives Logic
+
+When using alternatives (e.g., `@butter{100g} | @oil{80g}`), the compiler uses the **first option** (the "preferred" one) to calculate the Section Mass and Total Mass.
+The other options are ignored for the mass totals, even if they have different weights.
+
 ## Metadata Overrides
 
 You can define specific densities or unit weights for your recipe in the Frontmatter (YAML header). This is useful for specific ingredients (e.g., "My special flour is lighter").
