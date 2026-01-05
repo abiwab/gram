@@ -556,6 +556,10 @@ code {
   margin-left: 0.25em;
 }
 
+.separator {
+  list-style: none;
+  border-block-end: 1px dotted var(--muted-foreground);
+}
 
 /* =========================================
    8. JSON TREE VIEW
