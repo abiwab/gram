@@ -11,57 +11,64 @@ export interface IngredientData {
 
 // Top 50 Common Ingredients Data
 // Densities are approximate averages.
-export const INGREDIENT_DB: Record<string, IngredientData> = {
+// Internal Definition with Synonyms
+const RAW_ENTRIES: Array<{ names: string[], data: IngredientData }> = [
     // Basics
-    'water': { density: 1.0 },
-    'milk': { density: 1.03 },
-    'oil': { density: 0.92 },
-    'butter': { density: 0.95, unit_weight: 113.4 }, // 1 stick is common unit in US, but here unit_weight refers to "1 butter"? usually no count for butter unless "stick". 
-    // Actually for butter @butter{1} usually implies a stick in informal contexts or it's undefined. 
-    // Let's stick to Density mainly.
+    { names: ['water'], data: { density: 1.0 } },
+    { names: ['milk'], data: { density: 1.03 } },
+    { names: ['oil', 'vegetable oil', 'olive oil'], data: { density: 0.92 } },
+    { names: ['butter'], data: { density: 0.95, unit_weight: 113.4 } },
     
     // Baking
-    'flour': { density: 0.59 }, // All-purpose, sifted-ish
-    'sugar': { density: 0.85 }, // Granulated
-    'brown sugar': { density: 0.93 },
-    'powdered sugar': { density: 0.56 },
-    'salt': { density: 1.2 }, // Table salt
-    'honey': { density: 1.42 },
-    'yeast': { density: 0.95 },
-    'baking powder': { density: 0.9 },
-    'cocoa powder': { density: 0.45 },
+    { names: ['flour', 'all-purpose flour', 'wheat flour'], data: { density: 0.59 } },
+    { names: ['sugar', 'granulated sugar'], data: { density: 0.85 } },
+    { names: ['brown sugar'], data: { density: 0.93 } },
+    { names: ['powdered sugar', 'icing sugar', 'confectioners sugar'], data: { density: 0.56 } },
+    { names: ['salt'], data: { density: 1.2 } },
+    { names: ['honey'], data: { density: 1.42 } },
+    { names: ['yeast'], data: { density: 0.95 } },
+    { names: ['baking powder'], data: { density: 0.9 } },
+    { names: ['cocoa', 'cocoa powder'], data: { density: 0.45 } },
 
     // Dairy
-    'cream': { density: 1.01 },
-    'yogurt': { density: 1.06 },
-    'cheese': { density: 0.6 }, // Grated cheddar roughly
+    { names: ['cream', 'heavy cream'], data: { density: 1.01 } },
+    { names: ['yogurt', 'yoghurt'], data: { density: 1.06 } },
+    { names: ['cheese', 'cheddar'], data: { density: 0.6 } },
 
-    // Produce (Unit Weights are critical here)
-    'egg': { density: 1.03, unit_weight: 55 }, // Large egg
-    'eggs': { density: 1.03, unit_weight: 55 },
-    'egg yolk': { density: 1.03, unit_weight: 18 },
-    'egg white': { density: 1.03, unit_weight: 33 },
-    'lemon': { density: 1.0, unit_weight: 120 },
-    'lime': { density: 1.0, unit_weight: 60 },
-    'onion': { density: 0.7, unit_weight: 150 }, // Chopped density / Medium onion
-    'garlic': { density: 0.6, unit_weight: 5 }, // Clove
-    'carrot': { density: 0.7, unit_weight: 100 },
-    'potato': { density: 0.77, unit_weight: 200 },
-    'apple': { density: 0.6, unit_weight: 180 },
-    'banana': { density: 0.9, unit_weight: 120 },
-    'tomato': { density: 0.95, unit_weight: 120 },
+    // Produce
+    { names: ['egg', 'eggs'], data: { density: 1.03, unit_weight: 55 } },
+    { names: ['egg yolk', 'egg yolks'], data: { density: 1.03, unit_weight: 18 } },
+    { names: ['egg white', 'egg whites'], data: { density: 1.03, unit_weight: 33 } },
+    { names: ['lemon', 'lemons'], data: { density: 1.0, unit_weight: 120 } },
+    { names: ['lime', 'limes'], data: { density: 1.0, unit_weight: 60 } },
+    { names: ['onion', 'onions'], data: { density: 0.7, unit_weight: 150 } },
+    { names: ['garlic', 'garlic clove', 'garlic cloves'], data: { density: 0.6, unit_weight: 5 } },
+    { names: ['carrot', 'carrots'], data: { density: 0.7, unit_weight: 100 } },
+    { names: ['potato', 'potatoes'], data: { density: 0.77, unit_weight: 200 } },
+    { names: ['apple', 'apples'], data: { density: 0.6, unit_weight: 180 } },
+    { names: ['banana', 'bananas'], data: { density: 0.9, unit_weight: 120 } },
+    { names: ['tomato', 'tomatoes'], data: { density: 0.95, unit_weight: 120 } },
 
     // Grains
-    'rice': { density: 0.85 },
-    'oats': { density: 0.4 },
-    'pasta': { density: 0.5 }, // Dry
+    { names: ['rice'], data: { density: 0.85 } },
+    { names: ['oats', 'rolled oats'], data: { density: 0.4 } },
+    { names: ['pasta'], data: { density: 0.5 } },
 
     // Liquids
-    'wine': { density: 0.99 },
-    'vinegar': { density: 1.01 },
-    'soy sauce': { density: 1.13 },
-    'maple syrup': { density: 1.32 }
-};
+    { names: ['wine', 'red wine', 'white wine'], data: { density: 0.99 } },
+    { names: ['vinegar'], data: { density: 1.01 } },
+    { names: ['soy sauce'], data: { density: 1.13 } },
+    { names: ['maple syrup'], data: { density: 1.32 } }
+];
+
+// Generate the fast lookup map efficiently
+export const INGREDIENT_DB: Record<string, IngredientData> = {};
+
+RAW_ENTRIES.forEach(entry => {
+    entry.names.forEach(name => {
+        INGREDIENT_DB[name] = entry.data;
+    });
+});
 
 export function getIngredientData(name: string): IngredientData | null {
     const slug = name.toLowerCase().trim();
