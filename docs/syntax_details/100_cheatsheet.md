@@ -33,7 +33,10 @@ Placed right after the `@`.
 ### 5. Other Elements
 * **Cookware**: `#bowl{}` (Fixed), `#ramekins{4}` (Scalable), `#pan{=1}` (Forced Fixed).
     * *Dimensions/Material*: ALWAYS in `()` AFTER. `#mold{}(20cm)` (NOT `#mold{20cm}`).
-* **Timers**: `~{20min}` (Unit mandatory: min, h, d, s).
+* **Timers**: 
+    * `~{20min}` (Blocking/Active).
+    * `~{1h}&` (Async/Background - e.g. baking, resting).
+* **Metrics**: The compiler automatically calculates **Active Work**, **Total Duration**, and **Estimated Prep Time** (Mise en place).
 * **Temperatures**: `!{180°C}` (Unit mandatory: °C, °F).
 * **Intermediate Preparations**:
     * *Definition*: At end of paragraph `->&dough{}` or title `## Title ->&dough{}`.

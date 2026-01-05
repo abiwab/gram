@@ -197,7 +197,36 @@ Alternatives retain a typed structure:
 
 ---
 
-## 6. Edge Cases & Validation
+## 7. Time Metrics & Scheduling Logic
+The compiler performs a simplified Critical Path Method (CPM) analysis to generate three key metrics.
+
+### 7.1. Active vs Total Time
+*   **Default cost:** Any step without a timer costs **2 minutes** of Active Time (reading, mixing).
+*   **Synchronous Timer (`~{10m}`)**: Adds to both **Active Time** and **Total Time**. Stops the clock until done.
+*   **Asynchronous Timer (`~{1h}&`)**: 
+    *   Adds **0** to Active Time.
+    *   Starts a "Background Task" that runs parallel to subsequent steps.
+    *   **Total Time** is calculated as `Max(Cursor, Background_End)`.
+
+### 7.2. Estimated Preparation Time (Mise en Place)
+An automated estimation of the "hidden work" before cooking starts.
+
+**Formula:**
+`Total Prep = Base Cost + Usage Cost`
+
+1.  **Base Cost:** 
+    *   **+1 min** per unique Ingredient in Registry.
+    *   **+1 min** per unique Cookware in Registry.
+2.  **Usage Cost:**
+    *   Iterates through every step content.
+    *   **+2 min** if an ingredient has a specific preparation (e.g., `(chopped)`).
+3.  **Alternative Rule (Max Strategy):**
+    *   In a choice (`@A|@B`), the system calculates the prep cost for each option and takes the **MAXIMUM**.
+    *   *Rationale:* We estimate for the "worst case" scenario to ensure the user has enough time.
+
+---
+
+## 8. Edge Cases & Validation
 
 1.  **Unit Conversion:** The parser *should not* attempt to convert units (e.g., tbsp to ml) during parsing. It should store the raw unit. Unit conversion is a display/client-side concern.
 2.  **Missing Quantities:**
