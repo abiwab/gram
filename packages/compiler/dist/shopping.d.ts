@@ -12,6 +12,7 @@ interface ShoppingListItem {
     normalizedMass?: number;
     isEstimate?: boolean;
     conversionMethod?: string;
+    purchasingMass?: number;
 }
 interface CompositeItem {
     type: 'composite';

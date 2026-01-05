@@ -202,6 +202,23 @@ export interface MassMetrics {
     missingMassIngredients: string[];
 }
 
+export interface NutritionMetrics {
+    total: {
+        calories: number;
+        protein: number;
+        carbs: number;
+        fat: number;
+    };
+    perPortion?: {
+        calories: number;
+        protein: number;
+        carbs: number;
+        fat: number;
+    };
+    isEstimate: boolean;
+    coverage: number; 
+}
+
 export interface ProcessedSection {
     title: string | null;
     ingredients: Usage[];
@@ -247,5 +264,6 @@ export interface CompilationResult {
         totalTime: number;   // Critical path duration (end of last async task)
         activeTime: number;  // Sum of cook work time
         preparationTime: number; // Estimated mise-en-place time
+        nutrition?: NutritionMetrics;
     } & MassMetrics;
 }

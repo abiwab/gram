@@ -556,6 +556,7 @@ code {
   margin-left: 0.25em;
 }
 
+
 .preview-output .mass-badge {
   display: inline-block;
   font-size: 0.75em;
@@ -568,6 +569,14 @@ code {
   vertical-align: middle;
   cursor: help;
   line-height: 1.4;
+}
+
+.preview-output .gross-mass {
+  font-size: 0.75em;
+  color: var(--warning); 
+  /* Assuming warning color exists, otherwise using muted but italic */
+  font-style: italic;
+  margin-left: 0.5em;
 }
 
 .separator {
@@ -717,3 +726,60 @@ code {
 .hljs-number { color: var(--token-number); }
 .hljs-literal { color: var(--token-def); }
 .hljs-symbol, .hljs-bullet { color: var(--token-keyword); }
+
+/* Nutrition Panel */
+.nutrition-panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.nutrition-panel .nut-header {
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  font-size: 0.9em;
+  color: var(--muted-foreground);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nutrition-panel .nut-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.nutrition-panel .nut-item {
+  background: var(--secondary);
+  padding: 0.5rem;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.nutrition-panel .nut-item small {
+  font-size: 0.7em;
+  opacity: 0.7;
+}
+
+.nutrition-panel .nut-item .label {
+  font-size: 0.7em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  margin-bottom: 2px;
+}
+
+.nutrition-panel .est-badge {
+    background: var(--primary);
+    color: var(--primary-foreground);
+    border-radius: 9px;
+    padding: 0 6px;
+    font-size: 0.7em;
+    font-weight: normal;
+}

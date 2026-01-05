@@ -5,6 +5,7 @@ exports.compile = compile;
 const units_1 = require("./units");
 const utils_1 = require("./utils");
 const shopping_1 = require("./shopping");
+const nutrition_1 = require("./nutrition");
 const mass_normalization_1 = require("./mass_normalization");
 // Helper type helper since we don't have all exact AST names matching from Ohm semantics yet
 // We'll trust the structure matches types.ts
@@ -600,6 +601,22 @@ function compile(ast) {
                     });
                 });
                 return t;
+            })(),
+            nutrition: (() => {
+                let portions = 1;
+                if (ast.meta && ast.meta.portions) {
+                    // Try to parse portions
+                    const pText = Array.isArray(ast.meta.portions) ? ast.meta.portions[0] : ast.meta.portions;
+                    if (pText) {
+                        const match = pText.toString().match(/(\d+)/);
+                        if (match) {
+                            portions = parseInt(match[1], 10);
+                        }
+                    }
+                }
+                if (portions < 1)
+                    portions = 1;
+                return (0, nutrition_1.calculateNutrition)(shopping_list, portions);
             })()
         }
     };

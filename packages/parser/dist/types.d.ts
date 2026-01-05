@@ -170,6 +170,22 @@ export interface MassMetrics {
     massStatus: 'precise' | 'estimated' | 'incomplete';
     missingMassIngredients: string[];
 }
+export interface NutritionMetrics {
+    total: {
+        calories: number;
+        protein: number;
+        carbs: number;
+        fat: number;
+    };
+    perPortion?: {
+        calories: number;
+        protein: number;
+        carbs: number;
+        fat: number;
+    };
+    isEstimate: boolean;
+    coverage: number;
+}
 export interface ProcessedSection {
     title: string | null;
     ingredients: Usage[];
@@ -214,5 +230,6 @@ export interface CompilationResult {
         totalTime: number;
         activeTime: number;
         preparationTime: number;
+        nutrition?: NutritionMetrics;
     } & MassMetrics;
 }

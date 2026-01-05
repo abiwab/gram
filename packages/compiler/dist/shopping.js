@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.generateShoppingList = generateShoppingList;
 const utils_1 = require("./utils");
 const mass_normalization_1 = require("./mass_normalization");
+const ingredient_db_1 = require("./ingredient_db");
 const graph_1 = require("./graph");
 function formatQuantity(q) {
     if (!q)
@@ -190,6 +191,15 @@ function generateShoppingList(sections, registry, overrides) {
             if (units.length > 0) {
                 res.qty = parseFloat(item.otherUnits[units[0]].toFixed(2));
                 res.unit = units[0] || null;
+            }
+        }
+        // --- Gross Mass Calculation (Yield) ---
+        // Only if we have a normalized mass (Net) and the ingredient has a yield factor < 1
+        if (res.normalizedMass && res.normalizedMass > 0) {
+            const dbData = (0, ingredient_db_1.getIngredientData)(item.id);
+            if (dbData && dbData.yield && dbData.yield < 1) {
+                const gross = res.normalizedMass / dbData.yield;
+                res.purchasingMass = parseFloat(gross.toFixed(2));
             }
         }
         const hasMass = item.sureMass > 0;

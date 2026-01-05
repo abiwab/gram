@@ -498,48 +498,84 @@ function renderHTML(data) {
         html += `<h1>${escapeHtml(data.title)}</h1>\n\n`;
     }
     
-    // Meta & Metrics
-    if ((data.meta && Object.keys(data.meta).length > 0) || data.metrics) {
-        html += `<div class="metadata">\n`;
-        html += `  <ul>\n`;
+    // Display Metadata
+    html += `<div class="recipe-meta">\n`;
+    if (data.metrics) {
+        html += ` <div class="meta-item"><strong>Total Time:</strong> ${formatDuration(data.metrics.totalTime)}</div>\n`;
+        html += ` <div class="meta-item"><strong>Active Time:</strong> ${formatDuration(data.metrics.activeTime)}</div>\n`;
+        html += ` <div class="meta-item" title="Based on ingredient count and complexity"><strong>Prep Time:</strong> ${formatDuration(data.metrics.preparationTime)} <span class="est">(est.)</span></div>\n`;
+    }
+    html += `</div>\n`;
+
+    // Nutrition Panel
+    if (data.metrics && data.metrics.nutrition && data.metrics.nutrition.total && data.metrics.nutrition.total.calories > 0) {
+        const nut = data.metrics.nutrition;
+        const total = nut.total;
         
-        // Metrics first for visibility
-        if (data.metrics) {
-            html += `    <li class="metrics-item"><strong>🕒 Total Time</strong>: ${formatDuration(data.metrics.totalTime)}</li>\n`;
-            html += `    <li class="metrics-item"><strong>👨‍🍳 Active Time</strong>: ${formatDuration(data.metrics.activeTime)}</li>\n`;
-            
-            // Total Mass
-            if (data.metrics.totalMass) {
-                 const mass = Math.round(data.metrics.totalMass);
-                 let msg = `${mass}g`;
-                 let title = "Total Recipe Input Mass";
-                 if (data.metrics.massStatus === 'estimated') {
-                     msg = `~${mass}g`;
-                     title += " (Estimated)";
-                 }
-                 if (data.metrics.massStatus === 'incomplete') {
-                     msg = `${mass}g?`;
-                     title += " (Incomplete - missing some weights)";
-                 }
-                 html += `    <li class="metrics-item" title="${title}"><strong>⚖️ Total Mass</strong>: ${msg}</li>\n`;
-            }
-
-            if (data.metrics.preparationTime) {
-                html += `    <li class="metrics-item" title="Based on ingredient count and complexity"><strong>🔪 Mise en place</strong>: ${formatDuration(data.metrics.preparationTime)} <small style="opacity:0.6; font-weight:normal">(est.)</small></li>\n`;
-            }
-
-            // Separator if meta exists
-            if (data.meta && Object.keys(data.meta).length > 0) {
-                 html += `    <li class="separator"></li>\n`;
-            }
+        let portionText = '';
+        let portionVals = null;
+        if (nut.perPortion) {
+             portionText = ` (Per Portion)`;
+             portionVals = nut.perPortion;
         }
+        
+        const displayVals = portionVals || total;
+        
+        const cal = Math.round(displayVals.calories);
+        const p = displayVals.protein;
+        const c = displayVals.carbs;
+        const f = displayVals.fat;
+        
+        html += `<div class="nutrition-panel">\n`;
+        html += `  <div class="nut-header">Nutrition <span class="est-badge" title="Coverage: ${Math.round(nut.coverage * 100)}%">Estimate</span>${portionText}</div>\n`;
+        html += `  <div class="nut-grid">\n`;
+        html += `    <div class="nut-item"><strong>${cal}</strong> <small>kcal</small></div>\n`;
+        html += `    <div class="nut-item"><span class="label">Protein</span> <strong>${p}g</strong></div>\n`;
+        html += `    <div class="nut-item"><span class="label">Carbs</span> <strong>${c}g</strong></div>\n`;
+        html += `    <div class="nut-item"><span class="label">Fat</span> <strong>${f}g</strong></div>\n`;
+        html += `  </div>\n`;
+        html += `</div>\n`;
+    }
 
-        if (data.meta) {
-            for (const [k, v] of Object.entries(data.meta)) {
-                if (k !== 'title') html += `    <li><strong>${escapeHtml(k)}</strong>: ${escapeHtml(v)}</li>\n`;
-            }
+    html += `<div class="recipe-meta-secondary">\n`;
+    html += `<div class="metadata">\n`;
+    html += `  <ul>\n`;
+
+    // Secondary Metrics (Mass, etc)
+    if (data.metrics) {
+        if (data.metrics.totalMass) {
+             const mass = Math.round(data.metrics.totalMass);
+             let msg = `${mass}g`;
+             let title = "Total Recipe Input Mass";
+             if (data.metrics.massStatus === 'estimated') {
+                 msg = `~${mass}g`;
+                 title += " (Estimated)";
+             }
+             if (data.metrics.massStatus === 'incomplete') {
+                 msg = `${mass}g?`;
+                 title += " (Incomplete - missing some weights)";
+             }
+             html += `    <li class="metrics-item" title="${title}"><strong>⚖️ Total Mass</strong>: ${msg}</li>\n`;
         }
-        html += `  </ul>\n`;
+    }
+
+    if (data.meta) {
+        for (const [k, v] of Object.entries(data.meta)) {
+            if (k !== 'title') html += `    <li><strong>${escapeHtml(k)}</strong>: ${escapeHtml(v)}</li>\n`;
+        }
+    }
+    
+    html += `  </ul>\n`;
+    html += `</div>\n`; // End metadata
+    html += `</div>\n\n`; // End secondary container
+
+    if (data.sections.length > 0 && data.sections[0].retro_planning) {
+        // Retro Planning
+        html += `<div class="retro-planning">\n`;
+        html += `  <h2>Retro Planning</h2>\n`;
+        html += `  <div class="mermaid">\n`;
+        html += escapeHtml(data.sections[0].retro_planning) + '\n';
+        html += `  </div>\n`;
         html += `</div>\n\n`;
     }
     
@@ -570,7 +606,13 @@ function renderHTML(data) {
             } else if (item.display) {
                 html += `    <li>${escapeHtml(item.display)}</li>\n`;
             } else {
-                html += `    <li>${formatIngredientHTML(item, registry)}</li>\n`;
+                let extraHtml = '';
+                if (item.purchasingMass && item.purchasingMass !== item.normalizedMass) {
+                     // Show Gross Mass if different from Net
+                     const gross = Math.round(item.purchasingMass * 10) / 10;
+                     extraHtml = ` <span class="gross-mass" title="Purchasing Weight (including waste/peel)">(${gross}g gross)</span>`;
+                }
+                html += `    <li>${formatIngredientHTML(item, registry)}${extraHtml}</li>\n`;
             }
         });
         html += `  </ul>\n`;

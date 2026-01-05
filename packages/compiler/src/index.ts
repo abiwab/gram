@@ -2,6 +2,7 @@
 import { quantityToMinutes } from './units';
 import { slugify, minifyQuantity, createCleanUsage, cleanObject } from './utils';
 import { generateShoppingList } from './shopping';
+import { calculateNutrition } from './nutrition';
 import { normalizeMass } from './mass_normalization';
 import { 
     RecipeAST, SectionAST, IngredientAST, 
@@ -637,6 +638,22 @@ export function compile(ast: RecipeAST): CompilationResult {
                     });
                 });
                 return t;
+            })(),
+            nutrition: (() => {
+                let portions = 1;
+                if (ast.meta && ast.meta.portions) {
+                    // Try to parse portions
+                    const pText = Array.isArray(ast.meta.portions) ? ast.meta.portions[0] : ast.meta.portions;
+                    if (pText) {
+                        const match = pText.toString().match(/(\d+)/);
+                        if (match) {
+                            portions = parseInt(match[1], 10);
+                        }
+                    }
+                }
+                if (portions < 1) portions = 1;
+                
+                return calculateNutrition(shopping_list, portions);
             })()
         }
     };

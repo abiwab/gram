@@ -1,5 +1,6 @@
 import { slugify, minifyQuantity } from './utils';
 import { normalizeMass } from './mass_normalization';
+import { getIngredientData } from './ingredient_db';
 import { detectCycles } from './graph';
 import { ProcessedSection, Registry, Usage, QuantityValueAST } from 'gram-parser';
 
@@ -18,6 +19,7 @@ interface ShoppingListItem {
     normalizedMass?: number;
     isEstimate?: boolean;
     conversionMethod?: string;
+    purchasingMass?: number; // Gross mass considering yield/waste
 }
 
 interface CompositeItem {
@@ -221,6 +223,16 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
              }
         }
 
+        // --- Gross Mass Calculation (Yield) ---
+        // Only if we have a normalized mass (Net) and the ingredient has a yield factor < 1
+        if (res.normalizedMass && res.normalizedMass > 0) {
+             const dbData = getIngredientData(item.id);
+             if (dbData && dbData.yield && dbData.yield < 1) {
+                 const gross = res.normalizedMass / dbData.yield;
+                 res.purchasingMass = parseFloat(gross.toFixed(2));
+             }
+        }
+        
         const hasMass = item.sureMass! > 0;
         const hasOther = Object.keys(item.otherUnits!).length > 0;
         
@@ -249,6 +261,7 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
 
         return res;
     });
+
 
     const compositeList = [...compositeMap.values()].map(c => {
         let maxQ = 0;
