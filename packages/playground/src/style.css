@@ -603,7 +603,7 @@ code {
   display: inline-block;
   font-size: 0.75em;
   color: var(--muted-foreground);
-  background-color: var(--secondary);
+  background-color: var(--background);
   border: 1px solid var(--border);
   border-radius: 99px;
   padding: 0 0.5em;
@@ -611,6 +611,10 @@ code {
   vertical-align: middle;
   cursor: help;
   line-height: 1.4;
+}
+
+body.hide-mass-badges .preview-output .mass-badge {
+  display: none !important;
 }
 
 .preview-output .gross-mass {

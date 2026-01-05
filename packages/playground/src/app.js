@@ -10,10 +10,42 @@ const themeToggle = document.getElementById('theme-toggle');
 const warningsArea = document.getElementById('warnings');
 const viewSelect = document.getElementById('view-mode');
 
+const massToggleContainer = document.getElementById('mass-toggle-container');
+const showMassCheckbox = document.getElementById('show-mass');
+
+// Initial state
+const savedShowMass = localStorage.getItem('showMass');
+if (savedShowMass === 'false') {
+    showMassCheckbox.checked = false;
+    document.body.classList.add('hide-mass-badges');
+}
+
 viewSelect.addEventListener('change', () => {
     outputMode = viewSelect.value;
+    updateVisibility();
     update();
 });
+
+showMassCheckbox.addEventListener('change', () => {
+    const isChecked = showMassCheckbox.checked;
+    localStorage.setItem('showMass', isChecked);
+    if (isChecked) {
+        document.body.classList.remove('hide-mass-badges');
+    } else {
+        document.body.classList.add('hide-mass-badges');
+    }
+});
+
+function updateVisibility() {
+    if (outputMode === 'preview') {
+        massToggleContainer.style.display = 'flex';
+    } else {
+        massToggleContainer.style.display = 'none';
+    }
+}
+
+// Call once on init
+updateVisibility();
 
 // Theme Logic
 themeToggle.addEventListener('click', () => {
