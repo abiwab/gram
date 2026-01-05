@@ -224,9 +224,39 @@ function generateShoppingList(sections, registry, overrides) {
                 maxQ = q;
         }
         c.qty = maxQ;
-        c.usage = [...c._usageAccumulator.values()];
-        const { _subUsageMap, _usageAccumulator, ...rest } = c;
-        return rest;
+        // Calculate Mass for Parent Composite
+        // Composite parents are almost always counted units (e.g. 6 eggs)
+        // If an explicit unit exists in composite definition we should use it, but here we infer 'unit' from maxQ usually being unitless count
+        const parentName = registry.ingredients.get(c.id)?.name || c.id;
+        const parentNorm = (0, mass_normalization_1.normalizeMass)(c.qty, 'unit', parentName, overrides);
+        let cRes = {
+            type: 'composite',
+            id: c.id,
+            name: parentName,
+            qty: c.qty,
+            usage: [] // Will populate below
+        };
+        if (parentNorm) {
+            cRes.normalizedMass = parentNorm.mass;
+            cRes.isEstimate = parentNorm.isEstimate;
+            cRes.conversionMethod = parentNorm.method;
+        }
+        // Calculate Mass for Sub-usages
+        cRes.usage = [...c._usageAccumulator.values()].map(u => {
+            const childUsage = { ...u };
+            if (u.qty && typeof u.qty === 'number') {
+                const childId = u.id || '';
+                const childName = registry.ingredients.get(childId)?.name || childId;
+                const childNorm = (0, mass_normalization_1.normalizeMass)(u.qty, u.unit || '', childName, overrides);
+                if (childNorm) {
+                    childUsage.normalizedMass = childNorm.mass;
+                    childUsage.isEstimate = childNorm.isEstimate;
+                    childUsage.conversionMethod = childNorm.method;
+                }
+            }
+            return childUsage;
+        });
+        return cRes;
     });
     return [
         ...standardList,
