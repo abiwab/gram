@@ -505,6 +505,23 @@ function renderHTML(data) {
         if (data.metrics) {
             html += `    <li class="metrics-item"><strong>🕒 Total Time</strong>: ${formatDuration(data.metrics.totalTime)}</li>\n`;
             html += `    <li class="metrics-item"><strong>👨‍🍳 Active Time</strong>: ${formatDuration(data.metrics.activeTime)}</li>\n`;
+            
+            // Total Mass
+            if (data.metrics.totalMass) {
+                 const mass = Math.round(data.metrics.totalMass);
+                 let msg = `${mass}g`;
+                 let title = "Total Recipe Input Mass";
+                 if (data.metrics.massStatus === 'estimated') {
+                     msg = `~${mass}g`;
+                     title += " (Estimated)";
+                 }
+                 if (data.metrics.massStatus === 'incomplete') {
+                     msg = `${mass}g?`;
+                     title += " (Incomplete - missing some weights)";
+                 }
+                 html += `    <li class="metrics-item" title="${title}"><strong>⚖️ Total Mass</strong>: ${msg}</li>\n`;
+            }
+
             if (data.metrics.preparationTime) {
                 html += `    <li class="metrics-item" title="Based on ingredient count and complexity"><strong>🔪 Mise en place</strong>: ${formatDuration(data.metrics.preparationTime)} <small style="opacity:0.6; font-weight:normal">(est.)</small></li>\n`;
             }
@@ -541,11 +558,6 @@ function renderHTML(data) {
                 html += `    </li>\n`;
             } else if (item.type === 'composite') {
                 html += `    <li>\n`;
-                // formatIngredientHTML uses getQty(item) -> item.qty.
-                // Composite item has 'qty' property.
-                // BUT Composite Items might track mass in a custom way?
-                // Currently shopping list only exposes `qty` (UNITLESS max count) for composite parent.
-                // Mass isn't summed for composite parent usually (unless homogeneous?).
                 html += `      <strong>${formatIngredientHTML(item, registry)}</strong> (Composite):\n`;
                 html += `      <ul>\n`;
                 item.usage.forEach(child => {
@@ -556,7 +568,6 @@ function renderHTML(data) {
             } else if (item.display) {
                 html += `    <li>${escapeHtml(item.display)}</li>\n`;
             } else {
-                // Determine Mass Display for standard Shopping List Item
                 let massHtml = '';
                 if (item.normalizedMass) {
                      const mass = Math.round(item.normalizedMass * 10) / 10;
@@ -613,6 +624,23 @@ function renderHTML(data) {
                 if (sec.retro_planning) {
                     titleHtml += ` <small style="font-size:0.6em;opacity:0.8;border:1px solid currentColor;border-radius:4px;padding:2px 6px;vertical-align:middle;">⏱ ${escapeHtml(sec.retro_planning)}</small>`;
                 }
+                
+                // Section Mass
+                if (sec.metrics && sec.metrics.totalMass > 0) {
+                     const mass = Math.round(sec.metrics.totalMass);
+                     let msg = `${mass}g`;
+                     let title = "Section Input Mass";
+                     if (sec.metrics.massStatus === 'estimated') {
+                         msg = `~${mass}g`;
+                         title += " (Estimated)";
+                     }
+                     if (sec.metrics.massStatus === 'incomplete') {
+                         msg = `${mass}g?`;
+                         title += " (Incomplete)";
+                     }
+                     titleHtml += ` <small style="font-size:0.6em;opacity:0.8;border:1px solid currentColor;border-radius:4px;padding:2px 6px;vertical-align:middle;" title="${title}">⚖️ ${msg}</small>`;
+                }
+
                 html += `    <h3>${titleHtml}</h3>\n`;
             }
             

@@ -162,21 +162,13 @@ function processBlockItem(item, ctx, registry, secIngredients, secCookware) {
     if (item.type === 'Alternative') {
         const processedOptions = [];
         // Sequential processing to allow internal references (e.g. A | B{50% A})
-        // We create a temporary scope that accumulates previous options just for relative resolution visibility.
-        // We do NOT modify the actual secIngredients/secCookware here, they are passed as context only if read.
         let tempIngredientsScope = [...secIngredients];
         let tempCookwareScope = [...secCookware];
         item.options.forEach((opt) => {
-            // We pass temporary Arrays to capture outputs without polluting the main Section list yet
-            // But wait, processBlockItem PUSHES to the arrays passed. 
-            // So we need to pass a fake array to catch the output, but populate it with context first.
-            // Actually, resolveRelativeQuantity reads from the array passed as 4th arg.
-            // So we need to pass [ ...mainList, ...prevOptions ].
             const captureIngredients = [...tempIngredientsScope];
             const captureCookware = [...tempCookwareScope];
             const result = processBlockItem(opt, ctx, registry, captureIngredients, captureCookware);
             processedOptions.push(result);
-            // If the option produced an ingredient/cookware, make it available for next options in this group
             if (result && typeof result !== 'string') {
                 const r = result;
                 if (r.type === 'ingredient' || r.type === 'drink' || (r.id && !r.type)) {
@@ -205,7 +197,7 @@ function processBlockItem(item, ctx, registry, secIngredients, secCookware) {
         }
         if (ctx.definedIntermediates.has(item.name))
             ctx.usedIntermediates.add(item.name);
-        const obj = { type: 'reference', id };
+        const obj = { type: 'reference', id, name: item.name };
         if (item.quantity) {
             const cleanQty = (0, utils_1.minifyQuantity)(item.quantity);
             if (cleanQty !== undefined)
@@ -214,6 +206,26 @@ function processBlockItem(item, ctx, registry, secIngredients, secCookware) {
                 obj.unit = item.quantity.unit;
             if (item.quantity.type === 'TextQuantity')
                 obj.qty = item.quantity.value;
+            // Normalize explicit quantity
+            if (obj.qty && typeof obj.qty === 'number') {
+                const norm = (0, mass_normalization_1.normalizeMass)(obj.qty, obj.unit || '', item.name, ctx.densityOverrides);
+                if (norm) {
+                    obj.normalizedMass = norm.mass;
+                    obj.conversionMethod = norm.method;
+                    obj.isEstimate = norm.isEstimate;
+                }
+            }
+        }
+        else {
+            // No quantity -> Inherit mass from intermediate
+            if (ctx.variableWeights.has(id)) {
+                const w = ctx.variableWeights.get(id);
+                if (w) {
+                    obj.normalizedMass = w.mass;
+                    obj.isEstimate = w.isPartial;
+                    obj.conversionMethod = 'physical'; // Inherited
+                }
+            }
         }
         return obj;
     }
@@ -228,11 +240,11 @@ function processBlockItem(item, ctx, registry, secIngredients, secCookware) {
             if (entry)
                 entry.is_intermediate = true;
         }
-        return null; // Don't return as step content
+        return null;
     }
     if (item.type === 'Text')
         return item.value;
-    // Timer/Temperature logic
+    // Timer/Temperature logic (keep same)
     if (item.type === 'Timer' || item.type === 'Temperature') {
         const obj = { type: item.type.toLowerCase() };
         if (item.name)
@@ -265,8 +277,39 @@ function processBlockItem(item, ctx, registry, secIngredients, secCookware) {
     }
     return item;
 }
-// Scheduling State (Global mutable for straightforward linear processing across sections)
-// In a real app we might want to return this state, but for now we assume linear sections.
+function calculateMassMetrics(ingredients) {
+    let totalMass = 0;
+    let missing = [];
+    let isEstimated = false;
+    ingredients.forEach(i => {
+        let target = i;
+        if ((i.type === 'alternative' || i.type === 'group') && i.options && i.options.length > 0) {
+            target = i.options[0];
+        }
+        if (target.normalizedMass) {
+            totalMass += target.normalizedMass;
+            if (target.isEstimate)
+                isEstimated = true;
+        }
+        else {
+            const type = target.type || 'ingredient';
+            const validTypes = ['ingredient', 'reference', 'alternative', 'group'];
+            if (validTypes.includes(type) || !target.type) {
+                missing.push(target.name || target.id);
+            }
+        }
+    });
+    let status = 'precise';
+    if (missing.length > 0)
+        status = 'incomplete';
+    else if (isEstimated)
+        status = 'estimated';
+    return {
+        totalMass: parseFloat(totalMass.toFixed(2)),
+        massStatus: status,
+        missingMassIngredients: missing
+    };
+}
 function processSections(astChildren, registry, overrides) {
     const ctx = {
         warnings: registry.warnings,
@@ -275,12 +318,11 @@ function processSections(astChildren, registry, overrides) {
         definedIntermediates: new Set(),
         usedIntermediates: new Set(),
         variableWeights: new Map(),
-        globalScopes: new Map(), // Check Scope Conflicts
+        globalScopes: new Map(),
         densityOverrides: overrides || {}
     };
     const sections = [];
     let blocksToProcess = astChildren;
-    // Normalize: ensure strict Sections
     if (blocksToProcess.length > 0 && blocksToProcess[0].type !== 'Section') {
         blocksToProcess = [{ type: 'Section', title: null, children: astChildren }];
     }
@@ -290,7 +332,6 @@ function processSections(astChildren, registry, overrides) {
     blocksToProcess.forEach(section => {
         if (section.type !== 'Section')
             return;
-        // 1. Scope Validation
         if (section.intermediateDecl) {
             const varName = section.intermediateDecl.name;
             if (ctx.globalScopes.has(varName)) {
@@ -314,10 +355,8 @@ function processSections(astChildren, registry, overrides) {
         const steps = [];
         section.children.forEach((block) => {
             if (block.type === 'Step') {
-                // --- Gantt Logic Start ---
                 let localActiveTime = 0;
                 const stepAsyncTasks = [];
-                // Accumulate raw content for usage processing and mass calculation
                 const stepContentObjects = [];
                 let stepText = '';
                 ctx.intermediateDecl = null;
@@ -325,26 +364,18 @@ function processSections(astChildren, registry, overrides) {
                     const processed = processBlockItem(item, ctx, registry, sectionIngredients, sectionCookware);
                     if (processed) {
                         stepContentObjects.push(processed);
-                        // Text Reconstruction & Timing
                         if (typeof processed === 'string') {
                             stepText += processed;
                         }
                         else {
                             const p = processed;
-                            // Append basic text representation if available or appropriate
-                            // For timers/ingredients, the name/value usually matters.
-                            // Assuming processBlockItem doesn't return text for these, we rely on the parser's Text nodes for spaces/etc.
-                            // But wait, the Parser splits "Knead ~{10m}" into Text("Knead "), Timer(...).
-                            // So we just need to handle the Timer object.
                             if (p.type === 'timer' && p.quantity) {
-                                // Reconstruct text for display
                                 const qtyVal = p.quantity.value || p.quantity;
                                 const unit = p.unit || '';
                                 const name = p.name ? `~${p.name}` : '~';
                                 stepText += `${name}{${qtyVal}${unit}}`;
                                 if (p.isAsync)
                                     stepText += '&';
-                                // Gantt: Timer Handling
                                 const duration = (0, units_1.quantityToMinutes)({ value: p.quantity, unit: p.unit });
                                 if (p.isAsync) {
                                     stepAsyncTasks.push({
@@ -359,7 +390,7 @@ function processSections(astChildren, registry, overrides) {
                                 }
                             }
                             else if (p.type === 'ingredient') {
-                                stepText += `@${p.name}`; // Simplified reconstruction
+                                stepText += `@${p.name}`;
                             }
                             else if (p.type === 'cookware') {
                                 stepText += `#${p.name}`;
@@ -369,16 +400,14 @@ function processSections(astChildren, registry, overrides) {
                                 stepText += `!${p.name || ''}{${qtyVal}${p.unit || ''}}`;
                             }
                             else if (p.type === 'reference') {
-                                stepText += `&${p.name}`; // Simplified
+                                stepText += `&${p.name}`;
                             }
                         }
                     }
                 });
-                // Default Time Rule
                 if (localActiveTime === 0 && stepAsyncTasks.length === 0) {
-                    localActiveTime = 2; // Default 2 minutes for untimed steps
+                    localActiveTime = 2;
                 }
-                // Finalize Step Timings
                 const startTime = cookCursor;
                 const endTime = cookCursor + localActiveTime;
                 const stepObj = {
@@ -397,49 +426,36 @@ function processSections(astChildren, registry, overrides) {
                 }
                 cookCursor += localActiveTime;
                 globalActiveTime += localActiveTime;
-                // Mass Calculation Stuff (Preserved)
                 let stepMass = 0;
                 let stepValid = true;
-                // Recalculate based on stepContentObjects
                 stepContentObjects.forEach(p => {
                     if (typeof p !== 'string') {
-                        /* Mass calculation logic identical to before */
                         let m = 0;
                         let v = false;
-                        if (p.qty && typeof p.qty === 'number') {
+                        if (p.normalizedMass) {
+                            m = p.normalizedMass;
+                            v = true;
+                        }
+                        else if (p.qty && typeof p.qty === 'number') {
+                            // Fallback for old getter
                             const massRes = (0, units_1.getMass)(p.qty, p.unit);
                             m = massRes.mass;
                             v = massRes.valid;
                         }
-                        else if (p.type === 'reference' && p.formula && p.qty) {
-                            m = p.qty;
-                            v = true;
-                        }
-                        if (p.type === 'reference' && !p.qty) {
-                            if (ctx.variableWeights.has(p.id)) {
-                                const vData = ctx.variableWeights.get(p.id);
-                                if (vData) {
-                                    m = vData.mass;
-                                    v = !vData.isPartial;
-                                }
-                            }
-                        }
+                        // Reference types should have normalizedMass now if resolved
                         stepMass += m;
-                        if (!v)
+                        if (p.type === 'ingredient' && !v)
                             stepValid = false;
                     }
                 });
                 if (ctx.intermediateDecl) {
                     const varId = ctx.intermediateDecl;
                     ctx.variableWeights.set(varId, { mass: stepMass, isPartial: !stepValid });
-                    // Attach intermediate info to step? logic seems to be relying on ctx side-effect
-                    // The original code set `stepObj.intermediate_preparation`
                     stepObj.intermediate_preparation = ctx.intermediateDecl;
                 }
                 steps.push(stepObj);
             }
             else if (block.type === 'Comment') {
-                // Comments don't take time
                 steps.push({ type: 'comment', value: block.value, kind: block.kind });
             }
         });
@@ -449,16 +465,17 @@ function processSections(astChildren, registry, overrides) {
             cookware: sectionCookware,
             steps
         };
-        // Preserved logic for intermediateDecl on section
         if (section.intermediateDecl) {
             res.intermediate_preparation = section.intermediateDecl.name;
             let secMass = 0;
             let partial = false;
             res.ingredients.forEach(ing => {
-                const m = (0, units_1.getMass)(ing.qty, ing.unit);
-                secMass += m.mass;
-                if (!m.valid)
-                    partial = true;
+                if (ing.normalizedMass) {
+                    secMass += ing.normalizedMass;
+                }
+                else {
+                    partial = true; // Conservative
+                }
             });
             const varId = (0, utils_1.slugify)(section.intermediateDecl.name);
             ctx.variableWeights.set(varId, { mass: secMass, isPartial: partial });
@@ -468,7 +485,6 @@ function processSections(astChildren, registry, overrides) {
         }
         sections.push(res);
     });
-    // Calculate Total Time (Critical Path)
     let maxBackgroundTaskEnd = 0;
     activeBackgroundTasks.forEach(t => {
         if (t.end > maxBackgroundTaskEnd)
@@ -491,13 +507,11 @@ function compile(ast) {
         cookware: new Map(),
         warnings: []
     };
-    // Parse Density Overrides from Metadata
     const densityOverrides = {};
     if (ast.meta && ast.meta.densities) {
         const d = ast.meta.densities;
         const list = Array.isArray(d) ? d : [d];
         list.forEach((entry) => {
-            // Expected format: "ingredient: density" e.g. "flour: 0.6"
             const parts = entry.split(':');
             if (parts.length === 2) {
                 const name = (0, utils_1.slugify)(parts[0]);
@@ -510,6 +524,18 @@ function compile(ast) {
     }
     const resultPayload = processSections(ast.children, registry, densityOverrides);
     const sections = resultPayload.sections;
+    sections.forEach(sec => {
+        sec.metrics = calculateMassMetrics(sec.ingredients);
+    });
+    const allRawIngredients = [];
+    sections.forEach(sec => {
+        sec.ingredients.forEach(i => {
+            if (i.type !== 'reference') {
+                allRawIngredients.push(i);
+            }
+        });
+    });
+    const globalMassMetrics = calculateMassMetrics(allRawIngredients);
     const shopping_list = (0, shopping_1.generateShoppingList)(sections, registry, densityOverrides);
     const globalCookware = [];
     sections.forEach(sec => {
@@ -533,22 +559,18 @@ function compile(ast) {
         warnings: registry.warnings,
         metrics: {
             ...resultPayload.metrics,
+            ...globalMassMetrics,
             preparationTime: (() => {
                 let t = 0;
-                // 1. Base: 1 min per unique ingredient (including sub-ingredients if registered)
                 t += registry.ingredients.size * 1;
-                // 2. Base: 1 min per unique cookware
                 t += registry.cookware.size * 1;
-                // 3. Usage Bonus: +2 min for each manual preparation step
                 const countPrep = (item) => {
                     let localTime = 0;
                     if (!item)
                         return 0;
-                    // Direct ingredient with preparation text
                     if (item.type === 'ingredient' && item.preparation) {
                         localTime += 2;
                     }
-                    // Groups / Alternatives : take the WORST case (MAX)
                     if (item.options && Array.isArray(item.options)) {
                         let maxOpt = 0;
                         item.options.forEach((opt) => {
@@ -556,10 +578,9 @@ function compile(ast) {
                             if (optTime > maxOpt)
                                 maxOpt = optTime;
                         });
-                        // Add the max cost of the alternatives to the current item cost (usually 0 if it's just a group container)
                         localTime += maxOpt;
                     }
-                    else if (!item.type && item.id && item.preparation) { // Polymorphic fallback
+                    else if (!item.type && item.id && item.preparation) {
                         localTime += 2;
                     }
                     return localTime;

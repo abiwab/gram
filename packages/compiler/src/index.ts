@@ -6,7 +6,7 @@ import { normalizeMass } from './mass_normalization';
 import { 
     RecipeAST, SectionAST, IngredientAST, 
     Context, Registry, ProcessedSection, StepAST, CommentAST, 
-    CompilationResult, Usage, ProcessedStep
+    CompilationResult, Usage, ProcessedStep, MassMetrics
 } from 'gram-parser';
 
 // Helper type helper since we don't have all exact AST names matching from Ohm semantics yet
@@ -174,27 +174,17 @@ export function processBlockItem(item: any, ctx: Context, registry: Registry, se
     if (item.type === 'Alternative') {
         const processedOptions: any[] = [];
         // Sequential processing to allow internal references (e.g. A | B{50% A})
-        // We create a temporary scope that accumulates previous options just for relative resolution visibility.
-        // We do NOT modify the actual secIngredients/secCookware here, they are passed as context only if read.
         
         let tempIngredientsScope = [...secIngredients];
         let tempCookwareScope = [...secCookware];
 
         item.options.forEach((opt: any) => {
-            // We pass temporary Arrays to capture outputs without polluting the main Section list yet
-            // But wait, processBlockItem PUSHES to the arrays passed. 
-            // So we need to pass a fake array to catch the output, but populate it with context first.
-            
-            // Actually, resolveRelativeQuantity reads from the array passed as 4th arg.
-            // So we need to pass [ ...mainList, ...prevOptions ].
-            
             const captureIngredients = [...tempIngredientsScope];
             const captureCookware = [...tempCookwareScope];
             
             const result = processBlockItem(opt, ctx, registry, captureIngredients, captureCookware);
             processedOptions.push(result);
             
-            // If the option produced an ingredient/cookware, make it available for next options in this group
             if (result && typeof result !== 'string') {
                 const r = result as Usage;
                 if (r.type === 'ingredient' || r.type === 'drink' || (r.id && !r.type)) { 
@@ -224,12 +214,34 @@ export function processBlockItem(item: any, ctx: Context, registry: Registry, se
              ctx.warnings.push({ code: 'UNDEFINED_REFERENCE', message: `Reference to undefined ingredient '&${item.name}'.`, item: item.name });
         }
         if (ctx.definedIntermediates.has(item.name)) ctx.usedIntermediates.add(item.name);
-        const obj: any = { type: 'reference', id };
+        
+        const obj: Usage = { type: 'reference', id, name: item.name };
+        
         if (item.quantity) {
              const cleanQty = minifyQuantity(item.quantity);
              if (cleanQty !== undefined) obj.qty = cleanQty;
              if (item.quantity.unit) obj.unit = item.quantity.unit;
              if (item.quantity.type === 'TextQuantity') obj.qty = item.quantity.value;
+
+             // Normalize explicit quantity
+             if (obj.qty && typeof obj.qty === 'number') {
+                 const norm = normalizeMass(obj.qty, obj.unit || '', item.name, ctx.densityOverrides);
+                 if (norm) {
+                     obj.normalizedMass = norm.mass;
+                     obj.conversionMethod = norm.method;
+                     obj.isEstimate = norm.isEstimate;
+                 }
+             }
+        } else {
+             // No quantity -> Inherit mass from intermediate
+             if (ctx.variableWeights.has(id)) {
+                 const w = ctx.variableWeights.get(id);
+                 if (w) {
+                     obj.normalizedMass = w.mass;
+                     obj.isEstimate = w.isPartial;
+                     obj.conversionMethod = 'physical'; // Inherited
+                 }
+             }
         }
         return obj;
     }
@@ -243,33 +255,33 @@ export function processBlockItem(item: any, ctx: Context, registry: Registry, se
             const entry = registry.ingredients.get(id);
             if (entry) entry.is_intermediate = true;
         }
-        return null; // Don't return as step content
+        return null; 
     }
 
     if (item.type === 'Text') return item.value;
     
-    // Timer/Temperature logic
+    // Timer/Temperature logic (keep same)
     if (item.type === 'Timer' || item.type === 'Temperature') {
-        const obj: any = { type: item.type.toLowerCase() };
-        if (item.name) obj.name = item.name;
-        if (item.type === 'Timer' && (item as any).isAsync) obj.isAsync = true;
-        if (item.quantity) {
-             const q = item.quantity;
-             if (q.value) obj.quantity = q.value;
-             let unit = q.unit;
-             if (item.type === 'Timer' && (unit === 'm' || unit === 'minutes')) unit = 'min';
-             if (unit) obj.unit = unit;
-             
-             if (q.type === 'TextQuantity') {
-                 ctx.warnings.push({ code: 'INVALID_UNIT', message: `Invalid text content in ${item.type}.`, item: (q as any).value });
-                 obj.quantity = { type: 'text', value: (q as any).value }; 
-             } else {
-                 if (!unit) {
-                     ctx.warnings.push({ code: 'MISSING_UNIT', message: `${item.type} must have an explicit unit.`, item: item.name || item.type });
-                 }
-             }
-        }
-        return obj;
+         const obj: any = { type: item.type.toLowerCase() };
+         if (item.name) obj.name = item.name;
+         if (item.type === 'Timer' && (item as any).isAsync) obj.isAsync = true;
+         if (item.quantity) {
+              const q = item.quantity;
+              if (q.value) obj.quantity = q.value;
+              let unit = q.unit;
+              if (item.type === 'Timer' && (unit === 'm' || unit === 'minutes')) unit = 'min';
+              if (unit) obj.unit = unit;
+              
+              if (q.type === 'TextQuantity') {
+                  ctx.warnings.push({ code: 'INVALID_UNIT', message: `Invalid text content in ${item.type}.`, item: (q as any).value });
+                  obj.quantity = { type: 'text', value: (q as any).value }; 
+              } else {
+                  if (!unit) {
+                      ctx.warnings.push({ code: 'MISSING_UNIT', message: `${item.type} must have an explicit unit.`, item: item.name || item.type });
+                  }
+              }
+         }
+         return obj;
     }
 
     if (item.type === 'Comment') {
@@ -279,9 +291,40 @@ export function processBlockItem(item: any, ctx: Context, registry: Registry, se
     return item;
 }
 
+function calculateMassMetrics(ingredients: Usage[]): MassMetrics {
+    let totalMass = 0;
+    let missing: string[] = [];
+    let isEstimated = false;
 
-// Scheduling State (Global mutable for straightforward linear processing across sections)
-// In a real app we might want to return this state, but for now we assume linear sections.
+    ingredients.forEach(i => {
+        let target = i;
+        if ((i.type === 'alternative' || i.type === 'group') && i.options && i.options.length > 0) {
+            target = i.options[0];
+        }
+
+        if (target.normalizedMass) {
+            totalMass += target.normalizedMass;
+            if (target.isEstimate) isEstimated = true;
+        } else {
+            const type = target.type || 'ingredient';
+            const validTypes = ['ingredient', 'reference', 'alternative', 'group'];
+            if (validTypes.includes(type) || !target.type) {
+                 missing.push(target.name || target.id);
+            }
+        }
+    });
+
+    let status: 'precise' | 'estimated' | 'incomplete' = 'precise';
+    if (missing.length > 0) status = 'incomplete';
+    else if (isEstimated) status = 'estimated';
+
+    return { 
+        totalMass: parseFloat(totalMass.toFixed(2)), 
+        massStatus: status, 
+        missingMassIngredients: missing 
+    };
+}
+
 
 function processSections(astChildren: any[], registry: Registry, overrides?: Record<string, number>): { sections: ProcessedSection[], metrics: { totalTime: number, activeTime: number } } {
     const ctx: Context = {
@@ -291,14 +334,13 @@ function processSections(astChildren: any[], registry: Registry, overrides?: Rec
         definedIntermediates: new Set(),
         usedIntermediates: new Set(),
         variableWeights: new Map(),
-        globalScopes: new Map(), // Check Scope Conflicts
+        globalScopes: new Map(),
         densityOverrides: overrides || {}
     };
 
     const sections: ProcessedSection[] = [];
     let blocksToProcess = astChildren;
     
-    // Normalize: ensure strict Sections
     if (blocksToProcess.length > 0 && blocksToProcess[0].type !== 'Section') {
         blocksToProcess = [{ type: 'Section', title: null, children: astChildren }];
     }
@@ -310,7 +352,6 @@ function processSections(astChildren: any[], registry: Registry, overrides?: Rec
     blocksToProcess.forEach(section => {
         if (section.type !== 'Section') return; 
 
-        // 1. Scope Validation
         if (section.intermediateDecl) {
             const varName = section.intermediateDecl.name;
             if (ctx.globalScopes.has(varName)) {
@@ -336,11 +377,8 @@ function processSections(astChildren: any[], registry: Registry, overrides?: Rec
 
         section.children.forEach((block: any) => {
              if (block.type === 'Step') {
-                 // --- Gantt Logic Start ---
                  let localActiveTime = 0;
                  const stepAsyncTasks: Array<{ name?: string, duration: number, startOffset: number }> = [];
-                 
-                 // Accumulate raw content for usage processing and mass calculation
                  const stepContentObjects: any[] = [];
                  let stepText = '';
 
@@ -352,26 +390,17 @@ function processSections(astChildren: any[], registry: Registry, overrides?: Rec
                      if (processed) {
                           stepContentObjects.push(processed);
 
-                          // Text Reconstruction & Timing
                           if (typeof processed === 'string') {
                               stepText += processed;
                           } else {
                               const p = processed as any; 
-                              // Append basic text representation if available or appropriate
-                              // For timers/ingredients, the name/value usually matters.
-                              // Assuming processBlockItem doesn't return text for these, we rely on the parser's Text nodes for spaces/etc.
-                              // But wait, the Parser splits "Knead ~{10m}" into Text("Knead "), Timer(...).
-                              // So we just need to handle the Timer object.
-                              
                               if (p.type === 'timer' && p.quantity) {
-                                  // Reconstruct text for display
                                   const qtyVal = p.quantity.value || p.quantity;
                                   const unit = p.unit || '';
                                   const name = p.name ? `~${p.name}` : '~';
                                   stepText += `${name}{${qtyVal}${unit}}`;
                                   if (p.isAsync) stepText += '&';
 
-                                  // Gantt: Timer Handling
                                   const duration = quantityToMinutes({ value: p.quantity, unit: p.unit });
                                   
                                   if (p.isAsync) {
@@ -385,25 +414,23 @@ function processSections(astChildren: any[], registry: Registry, overrides?: Rec
                                       localActiveTime += duration;
                                   }
                               } else if (p.type === 'ingredient') {
-                                   stepText += `@${p.name}`; // Simplified reconstruction
+                                   stepText += `@${p.name}`;
                               } else if (p.type === 'cookware') {
                                    stepText += `#${p.name}`;
                               } else if (p.type === 'temperature') {
                                    const qtyVal = p.quantity.value || p.quantity;
                                    stepText += `!${p.name || ''}{${qtyVal}${p.unit || ''}}`;
                               } else if (p.type === 'reference') {
-                                   stepText += `&${p.name}`; // Simplified
+                                   stepText += `&${p.name}`;
                               }
                           }
                      }
                  });
 
-                 // Default Time Rule
                  if (localActiveTime === 0 && stepAsyncTasks.length === 0) {
-                     localActiveTime = 2; // Default 2 minutes for untimed steps
+                     localActiveTime = 2; 
                  }
 
-                 // Finalize Step Timings
                  const startTime = cookCursor;
                  const endTime = cookCursor + localActiveTime;
                  
@@ -426,49 +453,36 @@ function processSections(astChildren: any[], registry: Registry, overrides?: Rec
                  cookCursor += localActiveTime;
                  globalActiveTime += localActiveTime;
 
-                 // Mass Calculation Stuff (Preserved)
                  let stepMass = 0;
                  let stepValid = true;
-                 // Recalculate based on stepContentObjects
                  stepContentObjects.forEach(p => {
                       if (typeof p !== 'string') {
-                          /* Mass calculation logic identical to before */
                           let m = 0;
                           let v = false;
-                          if (p.qty && typeof p.qty === 'number') {
+                          if (p.normalizedMass) {
+                                m = p.normalizedMass;
+                                v = true;
+                          } else if (p.qty && typeof p.qty === 'number') {
+                                // Fallback for old getter
                                 const massRes = getMass(p.qty, p.unit);
                                 m = massRes.mass;
                                 v = massRes.valid;
-                          } else if (p.type === 'reference' && p.formula && p.qty) {
-                                m = p.qty as number; 
-                                v = true;
                           }
-                          if (p.type === 'reference' && !p.qty) {
-                                if (ctx.variableWeights.has(p.id)) {
-                                    const vData = ctx.variableWeights.get(p.id);
-                                    if (vData) {
-                                        m = vData.mass;
-                                        v = !vData.isPartial;
-                                    }
-                                }
-                          }
+                          // Reference types should have normalizedMass now if resolved
                           stepMass += m;
-                          if (!v) stepValid = false;
+                          if (p.type === 'ingredient' && !v) stepValid = false;
                       }
                  });
 
                  if (ctx.intermediateDecl) { 
                       const varId = ctx.intermediateDecl;
                       ctx.variableWeights.set(varId, { mass: stepMass, isPartial: !stepValid });
-                      // Attach intermediate info to step? logic seems to be relying on ctx side-effect
-                      // The original code set `stepObj.intermediate_preparation`
                       (stepObj as any).intermediate_preparation = ctx.intermediateDecl;
                  }
                  
                  steps.push(stepObj);
 
              } else if (block.type === 'Comment') {
-                 // Comments don't take time
                  steps.push({ type: 'comment', value: block.value, kind: block.kind } as any);
              }
         });
@@ -479,15 +493,17 @@ function processSections(astChildren: any[], registry: Registry, overrides?: Rec
             cookware: sectionCookware, 
             steps 
         };
-        // Preserved logic for intermediateDecl on section
+        
         if (section.intermediateDecl) {
              res.intermediate_preparation = section.intermediateDecl.name;
              let secMass = 0;
              let partial = false;
              res.ingredients.forEach(ing => {
-                 const m = getMass(ing.qty, ing.unit);
-                 secMass += m.mass;
-                 if (!m.valid) partial = true;
+                 if (ing.normalizedMass) {
+                     secMass += ing.normalizedMass;
+                 } else {
+                     partial = true; // Conservative
+                 }
              });
              const varId = slugify(section.intermediateDecl.name);
              ctx.variableWeights.set(varId, { mass: secMass, isPartial: partial });
@@ -498,7 +514,6 @@ function processSections(astChildren: any[], registry: Registry, overrides?: Rec
         sections.push(res);
     });
 
-    // Calculate Total Time (Critical Path)
     let maxBackgroundTaskEnd = 0;
     activeBackgroundTasks.forEach(t => {
         if (t.end > maxBackgroundTaskEnd) maxBackgroundTaskEnd = t.end;
@@ -523,13 +538,11 @@ export function compile(ast: RecipeAST): CompilationResult {
         warnings: []
     };
 
-    // Parse Density Overrides from Metadata
     const densityOverrides: Record<string, number> = {};
     if (ast.meta && ast.meta.densities) {
         const d = ast.meta.densities;
         const list = Array.isArray(d) ? d : [d];
         list.forEach((entry: string) => {
-            // Expected format: "ingredient: density" e.g. "flour: 0.6"
             const parts = entry.split(':');
             if (parts.length === 2) {
                 const name = slugify(parts[0]);
@@ -543,6 +556,22 @@ export function compile(ast: RecipeAST): CompilationResult {
 
     const resultPayload = processSections(ast.children, registry, densityOverrides);
     const sections = resultPayload.sections;
+    
+    sections.forEach(sec => {
+        sec.metrics = calculateMassMetrics(sec.ingredients);
+    });
+
+    const allRawIngredients: Usage[] = [];
+    sections.forEach(sec => {
+        sec.ingredients.forEach(i => {
+            if (i.type !== 'reference') { 
+                 allRawIngredients.push(i);
+            }
+        });
+    });
+    
+    const globalMassMetrics = calculateMassMetrics(allRawIngredients);
+
     const shopping_list = generateShoppingList(sections, registry, densityOverrides);
     
     const globalCookware: Usage[] = [];
@@ -568,33 +597,28 @@ export function compile(ast: RecipeAST): CompilationResult {
         warnings: registry.warnings,
         metrics: {
             ...resultPayload.metrics,
+            ...globalMassMetrics,
             preparationTime: (() => {
                 let t = 0;
-                // 1. Base: 1 min per unique ingredient (including sub-ingredients if registered)
                 t += registry.ingredients.size * 1;
-                // 2. Base: 1 min per unique cookware
                 t += registry.cookware.size * 1;
 
-                // 3. Usage Bonus: +2 min for each manual preparation step
                 const countPrep = (item: any): number => {
                     let localTime = 0;
                     if (!item) return 0;
                     
-                    // Direct ingredient with preparation text
                     if (item.type === 'ingredient' && item.preparation) {
                          localTime += 2;
                     }
                     
-                    // Groups / Alternatives : take the WORST case (MAX)
                     if (item.options && Array.isArray(item.options)) {
                         let maxOpt = 0;
                         item.options.forEach((opt: any) => {
                              const optTime = countPrep(opt);
                              if (optTime > maxOpt) maxOpt = optTime;
                         });
-                        // Add the max cost of the alternatives to the current item cost (usually 0 if it's just a group container)
                         localTime += maxOpt;
-                    } else if (!item.type && item.id && item.preparation) { // Polymorphic fallback
+                    } else if (!item.type && item.id && item.preparation) { 
                         localTime += 2;
                     }
                     

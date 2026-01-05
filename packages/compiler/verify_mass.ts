@@ -26,6 +26,7 @@ if (res.sections && res.sections.length > 0) {
         console.log(`${i.id}: mass=${i.normalizedMass}, method=${i.conversionMethod}, est=${(i as any).isEstimate}`);
     });
 }
+console.log("Global Metrics:", res.metrics);
 
 if (res.shopping_list) {
     console.log("Shopping List:");

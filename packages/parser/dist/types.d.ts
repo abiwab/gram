@@ -165,6 +165,11 @@ export interface Usage {
     conversionMethod?: 'physical' | 'density' | 'unit_weight' | 'default' | 'explicit';
     isEstimate?: boolean;
 }
+export interface MassMetrics {
+    totalMass: number;
+    massStatus: 'precise' | 'estimated' | 'incomplete';
+    missingMassIngredients: string[];
+}
 export interface ProcessedSection {
     title: string | null;
     ingredients: Usage[];
@@ -172,6 +177,7 @@ export interface ProcessedSection {
     steps: ProcessedStep[];
     intermediate_preparation?: string;
     retro_planning?: string | null;
+    metrics?: MassMetrics;
 }
 export interface ProcessedStep {
     type: 'step';
@@ -208,5 +214,5 @@ export interface CompilationResult {
         totalTime: number;
         activeTime: number;
         preparationTime: number;
-    };
+    } & MassMetrics;
 }

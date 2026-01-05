@@ -196,6 +196,12 @@ export interface Usage {
     isEstimate?: boolean;
 }
 
+export interface MassMetrics {
+    totalMass: number;
+    massStatus: 'precise' | 'estimated' | 'incomplete';
+    missingMassIngredients: string[];
+}
+
 export interface ProcessedSection {
     title: string | null;
     ingredients: Usage[];
@@ -203,6 +209,7 @@ export interface ProcessedSection {
     steps: ProcessedStep[];
     intermediate_preparation?: string;
     retro_planning?: string | null;
+    metrics?: MassMetrics;
 }
 
 export interface ProcessedStep {
@@ -240,5 +247,5 @@ export interface CompilationResult {
         totalTime: number;   // Critical path duration (end of last async task)
         activeTime: number;  // Sum of cook work time
         preparationTime: number; // Estimated mise-en-place time
-    };
+    } & MassMetrics;
 }
